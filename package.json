@@ -27,22 +27,38 @@
   "scripts": {
     "build": "tsdx build",
     "codecov": "codecov",
+    "example:start": "vite",
     "pub": "yarn build && np",
     "start": "tsdx watch",
     "test": "tsdx test --coverage"
   },
+  "dependencies": {
+    "@juggle/resize-observer": "^3.3.1",
+    "suub": "^3.1.3",
+    "vite": "^2.3.8"
+  },
   "devDependencies": {
-    "@types/jest": "^26.0.15",
-    "codecov": "^3.8.1",
-    "core-js": "3.9.1",
-    "np": "^7.0.0",
+    "@types/jest": "^26.0.23",
+    "codecov": "^3.8.2",
+    "core-js": "3.14.0",
+    "democrat": "^4.0.0-6",
+    "mobx": "^6.3.2",
+    "np": "^7.5.0",
+    "prettier": "^2.3.1",
     "tsdx": "^0.14.1",
-    "tslib": "^2.0.3",
-    "typescript": "^4.0.5"
+    "tslib": "^2.3.0",
+    "typescript": "^4.3.4"
+  },
+  "peerDependencies": {
+    "democrat": "4.0.0-5",
+    "mobx": "^6.1.8"
   },
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org"
+  },
+  "resolutions": {
+    "typescript": "4.3.4"
   },
   "np": {
     "yarn": true,
