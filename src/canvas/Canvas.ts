@@ -1,18 +1,10 @@
 import { action, autorun, computed, makeAutoObservable } from 'mobx';
 import { CanvasElement } from './CanvasElement';
-import {
-  clipRect,
-  offsetRect,
-  Rect,
-  rectsEqual,
-  roundRect,
-  scaleRect,
-  Size,
-  sliceRectSize,
-} from '../Rect';
+import { clipRect, offsetRect, Rect, rectsEqual, roundRect, scaleRect, Size } from '../Rect';
 
 export interface CanvasBase {
   readonly context: CanvasRenderingContext2D;
+  readonly element: HTMLCanvasElement;
   readonly rect: Rect;
   readonly rectRounded: Rect;
   readonly view: Rect;
@@ -45,7 +37,7 @@ export class Canvas implements CanvasBase {
   public constructor({ rect, viewport, pixelRatio }: Options) {
     const internal = makeAutoObservable<Internal>(
       {
-        rect: rect,
+        rect,
         pixelRatio,
         viewport: viewport,
         get rectRounded(): Rect {
@@ -56,7 +48,8 @@ export class Canvas implements CanvasBase {
           return scaleRect([0, 0, width, height], internal.pixelRatio);
         },
         get viewSize(): Size {
-          return sliceRectSize(internal.view);
+          const [, , width, height] = internal.view;
+          return [width, height];
         },
         get viewVisible(): Rect | false {
           if (internal.viewport === null) {

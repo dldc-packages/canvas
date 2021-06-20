@@ -1,5 +1,5 @@
 import { autorun } from 'mobx';
-import { ScreenCanvas, RootScheduler, EventsManager } from '../src';
+import { ScreenCanvas, RootScheduler, EventsManager, OffscreenCanvas } from '../src';
 import { ChildScheduler } from '../src/Scheduler';
 
 const rootEl = document.getElementById('root')!;
@@ -20,7 +20,6 @@ function createBox() {
   const box = document.createElement('div');
   box.style.position = 'relative';
   box.style.width = '20vw';
-  box.style.marginLeft = '200.5px';
   box.style.height = '300px';
   box.style.background = 'blue';
   return box;
@@ -35,8 +34,12 @@ const sch1 = new ChildScheduler();
 scheduler.addChild(sch1);
 sch1.onUpdate(view1.update);
 
+const off = new OffscreenCanvas({ width: 200, height: 200, pixelRatio: view1.pixelRatio });
+const sch2 = new ChildScheduler();
+sch1.addChild(sch2);
+
 // const box2 = createBox();
-// rootEl.appendChild(box2);
+// rootEl.appendChild(off.element);
 // const view2 = new ScreenCanvas(box2);
 // const sch2 = new ChildScheduler();
 // scheduler.addChild(sch2);
@@ -44,14 +47,12 @@ sch1.onUpdate(view1.update);
 
 document.body.addEventListener('click', updateCanvas);
 
-updateCanvas();
-
-autorun(() => {
-  const visible = view1.viewVisible;
-  if (visible) {
-    sch1.requestFrameRender(visible);
-  }
-});
+// autorun(() => {
+//   const visible = view1.viewVisible;
+//   if (visible) {
+//     sch1.requestFrameRender(visible);
+//   }
+// });
 
 // autorun(() => {
 //   const visible = view2.viewVisible;
@@ -60,11 +61,33 @@ autorun(() => {
 //   }
 // });
 
+sch2.onUpdate(() => {
+  if (off.viewVisible) {
+    sch2.requestFrameRender(off.viewVisible);
+  }
+});
+
+sch1.onUpdate(() => {
+  if (view1.viewVisible) {
+    sch1.requestFrameRender(view1.viewVisible);
+  }
+});
+
+sch2.onRender(({ rects, t }) => {
+  off.context.fillStyle = 'red';
+  rects.forEach(([x, y, w, h]) => {
+    off.context.clearRect(x, y, w, h);
+    const redX = Math.sin(t / 1000) * 200;
+    off.context.fillRect(redX, y, w, h);
+  });
+});
+
 sch1.onRender(({ rects }) => {
   view1.context.fillStyle = 'rgba(255, 255, 255, 1)';
   rects.forEach(([x, y, w, h]) => {
     view1.context.clearRect(x, y, w, h);
     view1.context.fillRect(x + 10, y + 10, w - 20, h - 20);
+    view1.context.drawImage(off.element, 0, 0);
   });
 });
 

@@ -14,14 +14,17 @@ interface Options {
 export class OffscreenCanvas implements CanvasBase {
   private readonly internal: Canvas;
   public readonly context: CanvasRenderingContext2D;
+  public readonly element: HTMLCanvasElement;
 
-  public constructor({ height, width, x = 0, y = 0, pixelRatio = 0, viewport = null }: Options) {
+  public constructor({ height, width, x = 0, y = 0, pixelRatio = 1, viewport = null }: Options) {
     const internal = new Canvas({ rect: [x, y, width, height], viewport, pixelRatio });
     this.context = internal.context;
+    this.element = internal.element;
     this.internal = internal;
 
     makeAutoObservable<this, 'internal'>(this, {
       internal: false,
+      element: false,
       context: false,
       update: action.bound,
     });

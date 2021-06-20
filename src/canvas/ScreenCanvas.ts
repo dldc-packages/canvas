@@ -16,6 +16,7 @@ export class ScreenCanvas implements CanvasBase {
   private readonly internal: Canvas;
   private readonly container: HTMLElement;
   public readonly context: CanvasRenderingContext2D;
+  public readonly element: HTMLCanvasElement;
 
   public constructor(container: HTMLElement) {
     const elemStyles = window.getComputedStyle(container);
@@ -32,12 +33,14 @@ export class ScreenCanvas implements CanvasBase {
     const viewport = Viewport.instance.rect;
     const internal = new Canvas({ rect, viewport, pixelRatio });
     this.context = internal.context;
+    this.element = internal.element;
     this.internal = internal;
     container.appendChild(this.internal.element);
 
     makeAutoObservable<this, 'internal' | 'container'>(this, {
       internal: false,
       container: false,
+      element: false,
       context: false,
       update: action.bound,
     });
