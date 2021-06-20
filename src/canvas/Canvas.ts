@@ -2,17 +2,6 @@ import { action, autorun, computed, makeAutoObservable } from 'mobx';
 import { CanvasElement } from './CanvasElement';
 import { clipRect, offsetRect, Rect, rectsEqual, roundRect, scaleRect, Size } from '../Rect';
 
-export interface CanvasBase {
-  readonly context: CanvasRenderingContext2D;
-  readonly element: HTMLCanvasElement;
-  readonly rect: Rect;
-  readonly rectRounded: Rect;
-  readonly view: Rect;
-  readonly viewVisible: Rect | false;
-  readonly viewport: Rect | null;
-  readonly pixelRatio: number;
-}
-
 interface Internal {
   rect: Rect;
   pixelRatio: number;
@@ -29,7 +18,7 @@ interface Options {
   pixelRatio: number;
 }
 
-export class Canvas implements CanvasBase {
+export class Canvas {
   private readonly internal: Internal;
   public readonly element: HTMLCanvasElement;
   public readonly context: CanvasRenderingContext2D;
@@ -96,7 +85,11 @@ export class Canvas implements CanvasBase {
     });
   }
 
-  public update({ rect, viewport, pixelRatio }: Options) {
+  public update({
+    rect = this.rect,
+    viewport = this.viewport,
+    pixelRatio = this.pixelRatio,
+  }: Partial<Options>) {
     if (rectsEqual(this.internal.rect, rect) === false) {
       this.internal.rect = rect;
     }

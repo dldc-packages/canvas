@@ -1,5 +1,5 @@
 import { autorun } from 'mobx';
-import { ScreenCanvas, RootScheduler, EventsManager, OffscreenCanvas } from '../src';
+import { ScreenCanvas, RootScheduler, EventsManager, Canvas } from '../src';
 import { ChildScheduler } from '../src/Scheduler';
 
 const rootEl = document.getElementById('root')!;
@@ -34,7 +34,11 @@ const sch1 = new ChildScheduler();
 scheduler.addChild(sch1);
 sch1.onUpdate(view1.update);
 
-const off = new OffscreenCanvas({ width: 200, height: 200, pixelRatio: view1.pixelRatio });
+const off = new Canvas({
+  rect: [0, 0, 200, 200],
+  viewport: null,
+  pixelRatio: view1.canvas.pixelRatio,
+});
 const sch2 = new ChildScheduler();
 sch1.addChild(sch2);
 
@@ -68,8 +72,8 @@ sch2.onUpdate(() => {
 });
 
 sch1.onUpdate(() => {
-  if (view1.viewVisible) {
-    sch1.requestFrameRender(view1.viewVisible);
+  if (view1.canvas.viewVisible) {
+    sch1.requestFrameRender(view1.canvas.viewVisible);
   }
 });
 
@@ -83,11 +87,11 @@ sch2.onRender(({ rects, t }) => {
 });
 
 sch1.onRender(({ rects }) => {
-  view1.context.fillStyle = 'rgba(255, 255, 255, 1)';
+  view1.canvas.context.fillStyle = 'rgba(255, 255, 255, 1)';
   rects.forEach(([x, y, w, h]) => {
-    view1.context.clearRect(x, y, w, h);
-    view1.context.fillRect(x + 10, y + 10, w - 20, h - 20);
-    view1.context.drawImage(off.element, 0, 0);
+    view1.canvas.context.clearRect(x, y, w, h);
+    view1.canvas.context.fillRect(x + 10, y + 10, w - 20, h - 20);
+    view1.canvas.context.drawImage(off.element, 0, 0);
   });
 });
 

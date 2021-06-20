@@ -1,8 +1,6 @@
-import { action, makeAutoObservable } from 'mobx';
-import { Rect } from '../Rect';
 import { convertDOMRectToRect } from '../Utils';
 import { Viewport } from '../Viewport';
-import { Canvas, CanvasBase } from './Canvas';
+import { Canvas } from './Canvas';
 
 const VALID_POSITIONS = ['relative', 'absolute', 'fixed', 'sticky'];
 
@@ -12,13 +10,12 @@ const VALID_POSITIONS = ['relative', 'absolute', 'fixed', 'sticky'];
  * We don't take a canvas elem directly because the canvas
  * must not have half pixels
  */
-export class ScreenCanvas implements CanvasBase {
-  private readonly internal: Canvas;
-  private readonly container: HTMLElement;
-  public readonly context: CanvasRenderingContext2D;
-  public readonly element: HTMLCanvasElement;
 
-  public constructor(container: HTMLElement) {
+export class ScreenCanvas {
+  public readonly container: HTMLElement;
+  public readonly canvas: Canvas;
+
+  constructor(container: HTMLElement) {
     const elemStyles = window.getComputedStyle(container);
     if (!VALID_POSITIONS.includes(elemStyles.position)) {
       throw new Error(
@@ -31,49 +28,15 @@ export class ScreenCanvas implements CanvasBase {
     const rect = convertDOMRectToRect(container.getBoundingClientRect());
     const pixelRatio = window.devicePixelRatio;
     const viewport = Viewport.instance.rect;
-    const internal = new Canvas({ rect, viewport, pixelRatio });
-    this.context = internal.context;
-    this.element = internal.element;
-    this.internal = internal;
-    container.appendChild(this.internal.element);
-
-    makeAutoObservable<this, 'internal' | 'container'>(this, {
-      internal: false,
-      container: false,
-      element: false,
-      context: false,
-      update: action.bound,
-    });
+    const canvas = new Canvas({ rect, viewport, pixelRatio });
+    container.appendChild(canvas.element);
+    this.canvas = canvas;
   }
 
-  public update() {
+  public update = () => {
     const rect = convertDOMRectToRect(this.container.getBoundingClientRect());
     const viewport = Viewport.instance.rect;
     const pixelRatio = window.devicePixelRatio;
-    this.internal.update({ rect, viewport, pixelRatio });
-  }
-
-  public get rect(): Rect {
-    return this.internal.rect;
-  }
-
-  public get rectRounded(): Rect {
-    return this.internal.rectRounded;
-  }
-
-  public get view(): Rect {
-    return this.internal.view;
-  }
-
-  public get viewVisible(): Rect | false {
-    return this.internal.viewVisible;
-  }
-
-  public get viewport(): Rect | null {
-    return this.internal.viewport;
-  }
-
-  public get pixelRatio(): number {
-    return this.internal.pixelRatio;
-  }
+    this.canvas.update({ rect, viewport, pixelRatio });
+  };
 }

@@ -1,5 +1,5 @@
 export { ScreenCanvas } from './canvas/ScreenCanvas';
-export { OffscreenCanvas } from './canvas/OffscreenCanvas';
+export { Canvas } from './canvas/Canvas';
 export { RootScheduler } from './Scheduler';
 export { EventsManager } from './EventsManager';
 
