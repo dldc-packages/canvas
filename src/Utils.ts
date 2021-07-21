@@ -81,3 +81,7 @@ export function filterNotFalse<T>(val: T | false): val is T {
 export function filterNotNull<T>(val: T | null): val is T {
   return val !== null;
 }
+
+export function expectNever(_val: never): never {
+  throw new Error('Unexpected never !');
+}

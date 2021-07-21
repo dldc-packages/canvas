@@ -1,9 +1,10 @@
-import { Rect } from './Rect';
+import { Rect, transformRects } from './Rect';
 import { SubscribeMethod, Subscription } from 'suub';
+import { inverseTransform, Transform } from './Transform';
 
-const ON_UPDATE = Symbol.for('DRAAW_INTERNAL_ON_UPDATE');
-const ON_POST_UPDATE = Symbol.for('DRAAW_INTERNAL_ON_POST_UPDATE');
-const ON_RENDER = Symbol.for('DRAAW_INTERNAL_ON_RENDER');
+const ON_FRAME_UPDATE = Symbol.for('DRAAW_INTERNAL_ON_FRAME_UPDATE');
+const ON_FRAME_POST_UPDATE = Symbol.for('DRAAW_INTERNAL_ON_FRAME_POST_UPDATE');
+const ON_FRAME_RENDER = Symbol.for('DRAAW_INTERNAL_ON_FRAME_RENDER');
 
 export interface RenderData {
   t: number;
@@ -15,15 +16,15 @@ export interface UpdateData {
 }
 
 export interface Scheduler {
-  requestFrameRender(rect: Rect): void;
+  requestFrameRender(rect: Rect | null | false): void;
   onUpdate: SubscribeMethod<UpdateData>;
   onPostUpdate: SubscribeMethod<UpdateData>;
   onRender: SubscribeMethod<RenderData>;
   addChild(child: Scheduler): void;
   removeChild(child: Scheduler): void;
-  [ON_UPDATE]: (t: number) => void;
-  [ON_POST_UPDATE]: (t: number) => void;
-  [ON_RENDER]: (t: number) => void;
+  [ON_FRAME_UPDATE]: (t: number) => void;
+  [ON_FRAME_POST_UPDATE]: (t: number) => void;
+  [ON_FRAME_RENDER]: (t: number, parentRects: Array<Rect>) => Array<Rect>;
 }
 
 export class RootScheduler implements Scheduler {
@@ -61,42 +62,50 @@ export class RootScheduler implements Scheduler {
   private loop = () => {
     const t = performance.now() - this.startTime;
     this.currentTime = t;
-    this[ON_UPDATE](t);
-    this[ON_POST_UPDATE](t);
-    this[ON_RENDER](t);
+    this[ON_FRAME_UPDATE](t);
+    this[ON_FRAME_POST_UPDATE](t);
+    this[ON_FRAME_RENDER](t);
     this.requestedFrameId = requestAnimationFrame(this.loop);
   };
 
-  [ON_UPDATE] = (t: number) => {
-    this.rootChild[ON_UPDATE](t);
+  [ON_FRAME_UPDATE] = (t: number) => {
+    this.rootChild[ON_FRAME_UPDATE](t);
   };
 
-  [ON_POST_UPDATE] = (t: number) => {
-    this.rootChild[ON_POST_UPDATE](t);
+  [ON_FRAME_POST_UPDATE] = (t: number) => {
+    this.rootChild[ON_FRAME_POST_UPDATE](t);
   };
 
-  [ON_RENDER] = (t: number) => {
-    this.rootChild[ON_RENDER](t);
+  [ON_FRAME_RENDER] = (t: number) => {
+    return this.rootChild[ON_FRAME_RENDER](t, []);
   };
 }
 
-type TransformRects = (rects: Array<Rect>) => Array<Rect>;
-
-const DEFAULT_RECT_TRANSFORM: TransformRects = (rects) => rects;
-
 export class ChildScheduler implements Scheduler {
-  private children: Array<Scheduler> = [];
+  private children: ReadonlyArray<Scheduler> = [];
   private nextRenderFrames: Array<Rect> = [];
   private isRendering = false;
   private renderSub = Subscription<RenderData>();
   private updateSub = Subscription<UpdateData>();
   private postUpdateSub = Subscription<UpdateData>();
+  private transform: Transform = [];
+  private transformInverse: Transform = [];
 
-  constructor(private readonly transformRects: TransformRects = DEFAULT_RECT_TRANSFORM) {}
+  constructor(transform: Transform = []) {
+    this.setTransform(transform);
+  }
 
-  requestFrameRender = (frame: Rect) => {
+  setTransform = (transform: Transform) => {
+    this.transform = transform;
+    this.transformInverse = inverseTransform(transform);
+  };
+
+  requestFrameRender = (frame: Rect | null | false) => {
     if (this.isRendering) {
       console.warn('Request frame inside a frame ?');
+    }
+    if (frame === null || frame === false) {
+      return;
     }
     this.nextRenderFrames.push(frame);
   };
@@ -105,7 +114,7 @@ export class ChildScheduler implements Scheduler {
     if (this.children.includes(child)) {
       return;
     }
-    this.children.push(child);
+    this.children = [...this.children, child];
   };
 
   removeChild = (child: Scheduler) => {
@@ -113,41 +122,53 @@ export class ChildScheduler implements Scheduler {
     if (childIndex === -1) {
       return;
     }
-    this.children.splice(childIndex, 1);
+    const copy = [...this.children];
+    copy.splice(childIndex, 1);
+    this.children = copy;
   };
 
   onRender = this.renderSub.subscribe;
   onUpdate = this.updateSub.subscribe;
   onPostUpdate = this.postUpdateSub.subscribe;
 
-  [ON_UPDATE] = (t: number) => {
-    const prevChildren = [...this.children];
-    prevChildren.forEach((child) => {
-      child[ON_UPDATE](t);
+  [ON_FRAME_UPDATE] = (t: number) => {
+    const children = this.children;
+    children.forEach((child) => {
+      child[ON_FRAME_UPDATE](t);
     });
     this.updateSub.emit({ t });
   };
 
-  [ON_POST_UPDATE] = (t: number) => {
-    const prevChildren = [...this.children];
-    prevChildren.forEach((child) => {
-      child[ON_POST_UPDATE](t);
+  [ON_FRAME_POST_UPDATE] = (t: number) => {
+    const children = this.children;
+    children.forEach((child) => {
+      child[ON_FRAME_POST_UPDATE](t);
     });
     this.postUpdateSub.emit({ t });
   };
 
-  [ON_RENDER] = (t: number) => {
-    const prevChildren = [...this.children];
-    prevChildren.forEach((child) => {
-      child[ON_RENDER](t);
-    });
+  [ON_FRAME_RENDER] = (t: number, parentRects: Array<Rect>): Array<Rect> => {
     this.isRendering = true;
-    const rects = this.nextRenderFrames;
+    const selfRects = this.nextRenderFrames;
     this.nextRenderFrames = [];
-    const transformed = this.transformRects(rects);
-    if (transformed.length > 0) {
-      this.renderSub.emit({ t, rects: transformed });
+    const transform = this.transform;
+    const transformInverse = this.transformInverse;
+    const children = this.children;
+
+    const parentRectsTransformed = transformRects(parentRects, transform);
+    const parentAndSelfRects = [...parentRectsTransformed, ...selfRects];
+
+    const childRendered: Array<Rect> = [];
+    children.forEach((child) => {
+      const rendered = child[ON_FRAME_RENDER](t, parentAndSelfRects);
+      childRendered.push(...rendered);
+    });
+    const allRects = [...parentAndSelfRects, ...childRendered];
+    if (allRects.length > 0) {
+      this.renderSub.emit({ t, rects: allRects });
     }
+    const selfAndChildRects = [...selfRects, ...childRendered];
     this.isRendering = false;
+    return transformRects(selfAndChildRects, transformInverse);
   };
 }

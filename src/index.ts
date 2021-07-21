@@ -1,4 +1,4 @@
-export { ScreenCanvas } from './canvas/ScreenCanvas';
+export { CanvasUtils } from './canvas/CanvasUtils';
 export { Canvas } from './canvas/Canvas';
 export { RootScheduler } from './Scheduler';
 export { EventsManager } from './EventsManager';

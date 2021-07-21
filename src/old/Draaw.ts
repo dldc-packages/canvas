@@ -1,7 +1,7 @@
 import { Factory } from 'democrat';
-import { EventsResponderItem } from './old/EventsResponder';
-import { HitManager } from './HitManager';
-import { Renderable } from './types';
+import { EventsResponderItem } from './EventsResponder';
+import { HitManager } from '../HitManager';
+import { Renderable } from '../types';
 
 interface Options {
   rootEl: HTMLElement;

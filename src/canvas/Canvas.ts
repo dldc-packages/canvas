@@ -13,9 +13,9 @@ interface Internal {
 }
 
 interface Options {
-  rect: Rect;
-  viewport: Rect | null;
-  pixelRatio: number;
+  rect?: Rect;
+  viewport?: Rect | null;
+  pixelRatio?: number;
 }
 
 export class Canvas {
@@ -23,7 +23,7 @@ export class Canvas {
   public readonly element: HTMLCanvasElement;
   public readonly context: CanvasRenderingContext2D;
 
-  public constructor({ rect, viewport, pixelRatio }: Options) {
+  public constructor({ rect = [0, 0, 200, 200], viewport = null, pixelRatio = 1 }: Options = {}) {
     const internal = makeAutoObservable<Internal>(
       {
         rect,
@@ -85,20 +85,29 @@ export class Canvas {
     });
   }
 
+  /**
+   *
+   * @returns did something change ?
+   */
   public update({
     rect = this.rect,
     viewport = this.viewport,
     pixelRatio = this.pixelRatio,
-  }: Partial<Options>) {
+  }: Options): boolean {
+    let changed = false;
     if (rectsEqual(this.internal.rect, rect) === false) {
       this.internal.rect = rect;
+      changed = true;
     }
     if (rectsEqual(this.internal.viewport, viewport) === false) {
       this.internal.viewport = viewport;
+      changed = true;
     }
     if (this.internal.pixelRatio !== pixelRatio) {
       this.internal.pixelRatio = pixelRatio;
+      changed = true;
     }
+    return changed;
   }
 
   public get rect(): Rect {

@@ -1,4 +1,6 @@
 import { Grid } from './Grid';
+import { Transform } from './Transform';
+import { expectNever } from './Utils';
 
 export type Rect = readonly [x: number, y: number, width: number, height: number];
 export type Box = readonly [left: number, top: number, right: number, bottom: number];
@@ -222,6 +224,28 @@ export function rectsArePerfectNeighbors([x1, y1, w1, h1]: Rect, [x2, y2, w2, h2
     // isRight
     (h1 === h2 && y1 === y2 && x2 + w2 === x1)
   );
+}
+
+export function transformRect(rect: Rect, transform: Transform): Rect {
+  let current = rect;
+  transform.forEach((step) => {
+    if (step.type === 'translate') {
+      const [x, y, w, h] = current;
+      current = [x + step.x, y + step.y, w, h];
+      return;
+    }
+    if (step.type === 'scale') {
+      const [x, y, w, h] = current;
+      current = [x, y, w * step.x, h * step.y];
+      return;
+    }
+    expectNever(step);
+  });
+  return current;
+}
+
+export function transformRects(rects: Array<Rect>, transform: Transform): Array<Rect> {
+  return rects.map((rect) => transformRect(rect, transform));
 }
 
 // export function sortRectsBySurface(rects: Array<Rect>): void {

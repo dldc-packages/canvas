@@ -1,119 +1,66 @@
-import { autorun } from 'mobx';
-import { ScreenCanvas, RootScheduler, EventsManager, Canvas } from '../src';
+import { CanvasUtils, RootScheduler, EventsManager, Canvas } from '../src';
 import { ChildScheduler } from '../src/Scheduler';
+import { TransformBuilder } from '../src/Transform';
+import { smoothShape, smoothStepsFromRect } from './SmoothShape';
 
 const rootEl = document.getElementById('root')!;
 
 const evm = new EventsManager(window);
 
-const width = window.innerWidth;
-const height = window.innerHeight;
-
 // ==========================
 
-const scheduler = new RootScheduler();
+const rootScheduler = new RootScheduler();
 
-rootEl.style.height = '4000px';
-rootEl.style.width = '2000px';
+const mainBox = document.createElement('div');
+mainBox.style.position = 'fixed';
+mainBox.style.left = '0';
+mainBox.style.right = '0';
+mainBox.style.top = '0';
+mainBox.style.bottom = '0';
+rootEl.appendChild(mainBox);
+const mainCanvas = new Canvas();
+CanvasUtils.syncWithScreen(mainCanvas, mainBox, rootScheduler);
 
-function createBox() {
-  const box = document.createElement('div');
-  box.style.position = 'relative';
-  box.style.width = '20vw';
-  box.style.height = '300px';
-  box.style.background = 'blue';
-  return box;
-}
+const mainScheduler = new ChildScheduler(
+  TransformBuilder.translate(100, 100).scale(0.5, 0.5).transform
+);
+rootScheduler.addChild(mainScheduler);
 
-// TODO: Use OffscreenCanvas
-
-const box1 = createBox();
-rootEl.appendChild(box1);
-const view1 = new ScreenCanvas(box1);
-const sch1 = new ChildScheduler();
-scheduler.addChild(sch1);
-sch1.onUpdate(view1.update);
-
-const off = new Canvas({
-  rect: [0, 0, 200, 200],
-  viewport: null,
-  pixelRatio: view1.canvas.pixelRatio,
-});
 const sch2 = new ChildScheduler();
-sch1.addChild(sch2);
+rootScheduler.addChild(sch2);
 
-// const box2 = createBox();
-// rootEl.appendChild(off.element);
-// const view2 = new ScreenCanvas(box2);
-// const sch2 = new ChildScheduler();
-// scheduler.addChild(sch2);
-// sch2.onUpdate(view2.update);
+// rootScheduler.requestFrameRender(mainCanvas.view);
+// sch1.requestFrameRender([0, 0, 100, 100]);
 
-document.body.addEventListener('click', updateCanvas);
-
-// autorun(() => {
-//   const visible = view1.viewVisible;
-//   if (visible) {
-//     sch1.requestFrameRender(visible);
-//   }
+// mainScheduler.onUpdate(() => {
+//   mainScheduler.requestFrameRender([0, 0, 200, 200]);
 // });
 
-// autorun(() => {
-//   const visible = view2.viewVisible;
-//   if (visible) {
-//     sch2.requestFrameRender(visible);
-//   }
-// });
-
-sch2.onUpdate(() => {
-  if (off.viewVisible) {
-    sch2.requestFrameRender(off.viewVisible);
-  }
-});
-
-sch1.onUpdate(() => {
-  if (view1.canvas.viewVisible) {
-    sch1.requestFrameRender(view1.canvas.viewVisible);
-  }
-});
-
-sch2.onRender(({ rects, t }) => {
-  off.context.fillStyle = 'red';
+mainScheduler.onRender(({ rects }) => {
+  mainCanvas.context.fillStyle = 'rgba(255, 255, 255, 1)';
   rects.forEach(([x, y, w, h]) => {
-    off.context.clearRect(x, y, w, h);
-    const redX = Math.sin(t / 1000) * 200;
-    off.context.fillRect(redX, y, w, h);
+    mainCanvas.context.clearRect(x, y, w, h);
+    mainCanvas.context.beginPath();
+    mainCanvas.context.rect(x + 10, y + 10, w - 20, h - 20);
+    mainCanvas.context.closePath();
+    mainCanvas.context.lineWidth = 1;
+    mainCanvas.context.strokeStyle = 'red';
+    mainCanvas.context.fill();
+
+    // const padding = 10;
+    // const size = Math.min(w - padding * 2, h - padding * 2);
+    // smoothShape(
+    //   mainCanvas.context,
+    //   smoothStepsFromRect([x + padding, y + padding, w - padding * 2, h - padding * 2]),
+    //   {
+    //     radius: size / 4,
+    //   }
+    // );
+    // mainCanvas.context.fill();
   });
 });
 
-sch1.onRender(({ rects }) => {
-  view1.canvas.context.fillStyle = 'rgba(255, 255, 255, 1)';
-  rects.forEach(([x, y, w, h]) => {
-    view1.canvas.context.clearRect(x, y, w, h);
-    view1.canvas.context.fillRect(x + 10, y + 10, w - 20, h - 20);
-    view1.canvas.context.drawImage(off.element, 0, 0);
-  });
-});
-
-// sch2.onRender(({ rects }) => {
-//   view2.context.fillStyle = 'rgba(255, 255, 255, 1)';
-//   rects.forEach(([x, y, w, h]) => {
-//     view2.context.clearRect(x, y, w, h);
-//     view2.context.fillRect(x + 10, y + 10, w - 20, h - 20);
-//   });
-// });
-
-function updateCanvas() {
-  box1.style.width = 100 + Math.random() * 400 + 'px';
-  box1.style.height = 100 + Math.random() * 400 + 'px';
-  box1.style.left = Math.random() * 200 + 'px';
-  box1.style.top = Math.random() * 200 + 'px';
-
-  // box2.style.width = 100 + Math.random() * 400 + 'px';
-  // box2.style.height = 100 + Math.random() * 400 + 'px';
-  // box2.style.left = Math.random() * 200 + 'px';
-  // box2.style.top = Math.random() * 200 + 'px';
-}
+rootScheduler.requestFrameRender(mainCanvas.view);
 
 // ============
 
