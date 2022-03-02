@@ -9,7 +9,7 @@ interface Internal {
 }
 
 // Observable Singleton to get the size of the viewport
-// Usage: const viewpot = Wiewport.instance;
+// Usage: const viewport = Wiewport.instance;
 export class Viewport {
   private static _instance: Viewport | null = null;
 

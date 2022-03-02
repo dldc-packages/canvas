@@ -62,7 +62,7 @@ export function mergeRects(r1: Rect, r2: Rect): Rect {
 }
 
 export function mergeIntersectingRects(rects: Array<Rect>): Array<Rect> {
-  let queue: Array<Rect> = [...rects];
+  const queue: Array<Rect> = [...rects];
   let result: Array<Rect> = [];
   while (queue.length > 0) {
     const rect = queue.shift()!;

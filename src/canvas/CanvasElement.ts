@@ -13,6 +13,9 @@ type Internal = {
   styleHeight: number;
 };
 
+/**
+ * Manipulate a canvas element
+ */
 export class CanvasElement {
   private internal: Internal;
 

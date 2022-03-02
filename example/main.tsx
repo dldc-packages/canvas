@@ -1,6 +1,6 @@
-import { CanvasUtils, RootScheduler, EventsManager, Canvas } from '../src';
+import { RootScheduler, EventsManager, Canvas } from '../src';
 import { ChildScheduler } from '../src/Scheduler';
-import { TransformBuilder } from '../src/Transform';
+import { TransformBuilder } from '../src/utils/Transform';
 import { smoothShape, smoothStepsFromRect } from './SmoothShape';
 
 const rootEl = document.getElementById('root')!;
@@ -13,21 +13,49 @@ const rootScheduler = new RootScheduler();
 
 const mainBox = document.createElement('div');
 mainBox.style.position = 'fixed';
-mainBox.style.left = '0';
-mainBox.style.right = '0';
-mainBox.style.top = '0';
-mainBox.style.bottom = '0';
+mainBox.style.inset = '0';
 rootEl.appendChild(mainBox);
 const mainCanvas = new Canvas();
-CanvasUtils.syncWithScreen(mainCanvas, mainBox, rootScheduler);
+mainCanvas.syncWithElement(mainBox, rootScheduler);
 
-const mainScheduler = new ChildScheduler(
-  TransformBuilder.translate(100, 100).scale(0.5, 0.5).transform
-);
-rootScheduler.addChild(mainScheduler);
+rootScheduler.onUpdate(() => {
+  // rootScheduler.requestFrameRender(mainCanvas.view);
+});
 
-const sch2 = new ChildScheduler();
-rootScheduler.addChild(sch2);
+rootScheduler.onRender(({ rects }) => {
+  // mainCanvas.context.fillStyle = 'blue';
+  rects.forEach(([x, y, w, h]) => {
+    mainCanvas.context.clearRect(x, y, w, h);
+    mainCanvas.context.beginPath();
+    mainCanvas.context.rect(x + 10, y + 10, w - 20, h - 20);
+    mainCanvas.context.closePath();
+    mainCanvas.context.lineWidth = 1;
+    mainCanvas.context.strokeStyle = 'blue';
+    mainCanvas.context.stroke();
+    // mainCanvas.context.drawImage(offscreenCanvas.element, )
+  });
+});
+
+const offscreenScheduler = new ChildScheduler(TransformBuilder.translate(100, 100).transform);
+rootScheduler.addChild(offscreenScheduler);
+
+const offscreenCanvas = new Canvas({
+  rect: [100, 100, 200, 200],
+  pixelRatio: mainCanvas.pixelRatio,
+});
+
+offscreenScheduler.onUpdate(() => {
+  offscreenScheduler.requestFrameRender(offscreenCanvas.view);
+});
+
+offscreenScheduler.onRender(({ t, rects }) => {
+  offscreenCanvas.context.fillStyle = 'red';
+  const x = Math.sin(t / 1000) * 100;
+  offscreenCanvas.context.fillRect(x, 0, 50, 50);
+});
+
+// const sch2 = new ChildScheduler();
+// rootScheduler.addChild(sch2);
 
 // rootScheduler.requestFrameRender(mainCanvas.view);
 // sch1.requestFrameRender([0, 0, 100, 100]);
@@ -36,31 +64,31 @@ rootScheduler.addChild(sch2);
 //   mainScheduler.requestFrameRender([0, 0, 200, 200]);
 // });
 
-mainScheduler.onRender(({ rects }) => {
-  mainCanvas.context.fillStyle = 'rgba(255, 255, 255, 1)';
-  rects.forEach(([x, y, w, h]) => {
-    mainCanvas.context.clearRect(x, y, w, h);
-    mainCanvas.context.beginPath();
-    mainCanvas.context.rect(x + 10, y + 10, w - 20, h - 20);
-    mainCanvas.context.closePath();
-    mainCanvas.context.lineWidth = 1;
-    mainCanvas.context.strokeStyle = 'red';
-    mainCanvas.context.fill();
+// mainScheduler.onRender(({ rects }) => {
+//   mainCanvas.context.fillStyle = 'rgba(255, 255, 255, 1)';
+//   rects.forEach(([x, y, w, h]) => {
+//     mainCanvas.context.clearRect(x, y, w, h);
+//     mainCanvas.context.beginPath();
+//     mainCanvas.context.rect(x + 10, y + 10, w - 20, h - 20);
+//     mainCanvas.context.closePath();
+//     mainCanvas.context.lineWidth = 1;
+//     mainCanvas.context.strokeStyle = 'red';
+//     mainCanvas.context.fill();
 
-    // const padding = 10;
-    // const size = Math.min(w - padding * 2, h - padding * 2);
-    // smoothShape(
-    //   mainCanvas.context,
-    //   smoothStepsFromRect([x + padding, y + padding, w - padding * 2, h - padding * 2]),
-    //   {
-    //     radius: size / 4,
-    //   }
-    // );
-    // mainCanvas.context.fill();
-  });
-});
+//     // const padding = 10;
+//     // const size = Math.min(w - padding * 2, h - padding * 2);
+//     // smoothShape(
+//     //   mainCanvas.context,
+//     //   smoothStepsFromRect([x + padding, y + padding, w - padding * 2, h - padding * 2]),
+//     //   {
+//     //     radius: size / 4,
+//     //   }
+//     // );
+//     // mainCanvas.context.fill();
+//   });
+// });
 
-rootScheduler.requestFrameRender(mainCanvas.view);
+// rootScheduler.requestFrameRender(mainCanvas.view);
 
 // ============
 

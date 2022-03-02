@@ -1,4 +1,4 @@
-import { randomSequenceOfUniqueColor } from './Utils';
+import { randomSequenceOfUniqueColor } from './utils/Utils';
 import { CanvasElement } from './canvas/CanvasElement';
 import { Draw } from './types';
 

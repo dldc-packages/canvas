@@ -1,7 +1,7 @@
 import { makeAutoObservable, runInAction } from 'mobx';
-import { Rect, rectsEqual, clipRect, scaleRect, offsetRect, roundRect } from '../Rect';
+import { Rect, rectsEqual, clipRect, scaleRect, offsetRect, roundRect } from '../utils/Rect';
 import { Scheduler } from '../Scheduler';
-import { convertDOMRectToRect } from '../Utils';
+import { convertDOMRectToRect } from '../utils/Utils';
 import { Viewport } from '../observables/Viewport';
 
 export class CanvasView {
