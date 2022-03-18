@@ -4,8 +4,8 @@ import {
   ZenWheelEvent,
   EventsManager,
   PointerHoverEvent,
-} from '../EventsManager';
-import { HitFn } from '../types';
+} from '../src/EventsManager';
+import { HitFn } from '../src/types';
 export const STOP_PROPAGATION = Symbol('STOP_PROPAGATION');
 
 export type StoppableHanlderResult = void | null | undefined | typeof STOP_PROPAGATION;

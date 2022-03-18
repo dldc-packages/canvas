@@ -1,6 +1,6 @@
 import { Rect, transformRects } from './utils/Rect';
 import { SubscribeMethod, Subscription } from 'suub';
-import { inverseTransform, Transform } from './utils/Transform';
+import { Transform } from './utils/Transform';
 
 // Using Symbols so that parent can access thes properties
 const ON_FRAME_UPDATE = Symbol.for('DRAAW_INTERNAL_ON_FRAME_UPDATE');
@@ -128,7 +128,6 @@ export class ChildScheduler implements Scheduler {
   private nextRenderFrames: Array<Rect> = [];
   private isRendering = false;
   private transform: Transform = [];
-  private transformInverse: Transform = [];
   private parent: Scheduler | null = null;
 
   constructor(transform: Transform = []) {
@@ -140,7 +139,6 @@ export class ChildScheduler implements Scheduler {
    */
   readonly setTransform = (transform: Transform) => {
     this.transform = transform;
-    this.transformInverse = inverseTransform(transform);
   };
 
   /**

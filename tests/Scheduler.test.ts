@@ -100,7 +100,7 @@ test('Child scheduler with transform (render from child', () => {
   // trigger frame
   (root as any).onFrame();
   expect(onRootRender).toHaveBeenCalled();
-  expect(onRootRender.mock.calls[0][0].rects).toEqual([[200, 200, 100, 100]]);
+  expect(onRootRender.mock.calls[0][0].rects).toEqual([[200, 200, 50, 50]]);
   expect(onChildRender).toHaveBeenCalled();
   expect(onChildRender.mock.calls[0][0].rects).toEqual([[0, 0, 100, 100]]);
 });
