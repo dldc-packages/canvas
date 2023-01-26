@@ -21,9 +21,5 @@ export class DraawContext extends miid.Stack {
 }
 
 const mid: Middleware = (ctx, next) => {
-
-  return () => {
-    
-  }
-}
-
+  return () => {};
+};
