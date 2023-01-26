@@ -1,5 +1,5 @@
-import { Grid } from './Grid';
-import { Transform } from './Transform';
+import { Grid, IGrid } from './Grid';
+import { ITransform } from './Transform';
 import { expectNever } from './Utils';
 
 export type Rect = readonly [x: number, y: number, width: number, height: number];
@@ -148,7 +148,7 @@ export function mergeOverlapingRects(rects: Array<Rect>): Array<Rect> {
   const v = Array.from(vSplits).sort((l, r) => l - r);
   const hSize = h.length - 1;
   const vSize = v.length - 1;
-  const grid = new Grid<null | number>({ width: hSize, height: vSize, defaultValue: null });
+  const grid = Grid.create<null | number>({ width: hSize, height: vSize, defaultValue: null });
   let nextBoxIndex = 0;
   boxes.forEach(([left, top, right, bottom]) => {
     const hIndexes = extractIndexes(h, left, right);
@@ -186,7 +186,7 @@ export function mergeOverlapingRects(rects: Array<Rect>): Array<Rect> {
   return gridBoxes.map(boxToRect);
 
   // return wether the grid was changed or not
-  function expandCell(grid: Grid<null | number>, direction: 'horizontal' | 'vertical'): boolean {
+  function expandCell(grid: IGrid<null | number>, direction: 'horizontal' | 'vertical'): boolean {
     const handled = new Set<number>();
     for (let i = 0; i < grid.data.length; i++) {
       const num = grid.data[i];
@@ -226,7 +226,7 @@ export function rectsArePerfectNeighbors([x1, y1, w1, h1]: Rect, [x2, y2, w2, h2
   );
 }
 
-export function transformRect(rect: Rect, transform: Transform): Rect {
+export function transformRect(rect: Rect, transform: ITransform): Rect {
   let current = rect;
   transform.forEach((step) => {
     if (step.type === 'translate') {
@@ -244,7 +244,7 @@ export function transformRect(rect: Rect, transform: Transform): Rect {
   return current;
 }
 
-export function transformRects(rects: Array<Rect>, transform: Transform): Array<Rect> {
+export function transformRects(rects: Array<Rect>, transform: ITransform): Array<Rect> {
   return rects.map((rect) => transformRect(rect, transform));
 }
 

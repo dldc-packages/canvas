@@ -1,56 +1,46 @@
-import { makeAutoObservable } from 'mobx';
+import { batch, computed, signal } from '@preact/signals-core';
 import { Rect } from './Rect';
 
-interface Internal {
-  width: number;
-  height: number;
-  onResize: () => void;
-  rect: Rect;
+export interface IViewport {
+  readonly width: number;
+  readonly height: number;
+  readonly rect: Rect;
 }
 
-// Observable Singleton to get the size of the viewport
-// Usage: const viewport = Wiewport.instance;
-export class Viewport {
-  private static _instance: Viewport | null = null;
+/**
+ * Observable Singleton to get the size of the viewport
+ * Usage: const viewport = Wiewport.instance;
+ */
+export const Viewport = (() => {
+  const instance = createInstance();
 
-  public static get instance(): Viewport {
-    if (Viewport._instance === null) {
-      Viewport._instance = Viewport.create();
-    }
-    return Viewport._instance;
-  }
+  return {
+    instance,
+    createInstance,
+  };
 
-  private static create(): Viewport {
-    const internal = makeAutoObservable<Internal>({
-      width: window.innerWidth,
-      height: window.innerHeight,
-      onResize() {
-        internal.width = window.innerWidth;
-        internal.height = window.innerHeight;
-      },
-      get rect(): Rect {
-        return [0, 0, internal.width, internal.height];
-      },
-    });
+  function createInstance(): IViewport {
+    const $width = signal(window.innerWidth);
+    const $height = signal(window.innerHeight);
+    const $rect = computed<Rect>(() => [0, 0, $width.value, $height.value]);
+
     window.addEventListener('resize', () => {
-      internal.onResize();
+      batch(() => {
+        $width.value = window.innerWidth;
+        $height.value = window.innerHeight;
+      });
     });
-    return new Viewport(internal);
-  }
 
-  private constructor(private internal: Internal) {
-    makeAutoObservable(this);
+    return {
+      get rect(): Rect {
+        return $rect.value;
+      },
+      get width() {
+        return $width.value;
+      },
+      get height() {
+        return $height.value;
+      },
+    };
   }
-
-  public get rect(): Rect {
-    return this.internal.rect;
-  }
-
-  public get width() {
-    return this.internal.width;
-  }
-
-  public get height() {
-    return this.internal.height;
-  }
-}
+})();

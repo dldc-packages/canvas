@@ -1,26 +1,9 @@
-import { action, autorun, computed, makeAutoObservable } from 'mobx';
 import { CanvasElement } from './CanvasElement';
 import { clipRect, offsetRect, Rect, rectsEqual, roundRect, scaleRect, Size } from '../utils/Rect';
-import { Scheduler } from '../Scheduler';
+import { IScheduler } from '../Scheduler';
 import { convertDOMRectToRect } from '../utils/Utils';
 import { Viewport } from '../utils/Viewport';
-
-interface Internal {
-  // Canvas size (for example, the size of the canvas element)
-  rect: Rect;
-  // like rect but with integer values only (rounded)
-  perfectRect: Rect;
-  // How many pixels per "pixel"
-  pixelRatio: number;
-  // Global viewport (window.innerWidth, window.innerHeight)
-  viewport: Rect | null;
-  // available space inside the canvas (perfectRect * pixelRatio)
-  view: Rect;
-  // size of view
-  viewSize: Size;
-  // Part of the view that is visible (in the viewport)
-  viewVisible: Rect | false;
-}
+import { computed, effect, signal } from '@preact/signals-core';
 
 interface Options {
   rect?: Rect;
@@ -30,170 +13,169 @@ interface Options {
 
 const VALID_POSITIONS = ['relative', 'absolute', 'fixed', 'sticky'];
 
-/**
- * Manipulate
- */
-export class Canvas {
-  private readonly internal: Internal;
-  private synching = false;
+export interface ICanvas {
+  readonly rect: Rect;
+  readonly rectRounded: Rect;
+  readonly view: Rect;
+  readonly viewVisible: Rect | false;
+  readonly viewport: Rect | null;
+  readonly pixelRatio: number;
+  readonly element: HTMLCanvasElement;
+  readonly context: CanvasRenderingContext2D;
 
-  public readonly element: HTMLCanvasElement;
-  public readonly context: CanvasRenderingContext2D;
+  update(options: Options): boolean;
+  syncWithElement(container: HTMLElement, scheduler: IScheduler): void;
+}
 
-  public constructor({ rect = [0, 0, 200, 200], viewport = null, pixelRatio = 1 }: Options = {}) {
-    const internal = makeAutoObservable<Internal>(
-      {
-        rect,
-        get perfectRect(): Rect {
-          return roundRect(internal.rect);
-        },
-        pixelRatio,
-        viewport: viewport,
-        get view(): Rect {
-          const [, , width, height] = internal.perfectRect;
-          return scaleRect([0, 0, width, height], internal.pixelRatio);
-        },
-        get viewSize(): Size {
-          const [, , width, height] = internal.view;
-          return [width, height];
-        },
-        get viewVisible(): Rect | false {
-          if (internal.viewport === null) {
-            return this.view;
-          }
-          const [x, y, width, height] = internal.perfectRect;
-          const offsetViewport = offsetRect(internal.viewport, -x, -y);
-          const visibleRect = clipRect([0, 0, width, height], offsetViewport) ?? false;
-          if (visibleRect === false) {
-            return false;
-          }
-          return scaleRect(visibleRect, internal.pixelRatio);
-        },
-      },
-      {
-        viewSize: computed.struct,
-        viewVisible: computed.struct,
+export const Canvas = (() => {
+  return create;
+
+  // { rect = [0, 0, 200, 200], viewport = null, pixelRatio = 1 }: Options = {}
+  function create(options: Options = {}): ICanvas {
+    // Canvas size (for example, the size of the canvas element)
+    const rect = signal<Rect>(options.rect ?? [0, 0, 200, 200]);
+    // like rect but with integer values only (rounded)
+    const perfectRect = computed(() => roundRect(rect.value));
+    // How many pixels per "pixel"
+    const pixelRatio = signal<number>(options.pixelRatio ?? 1);
+    // Global viewport (window.innerWidth, window.innerHeight)
+    const viewport = signal<Rect | null>(options.viewport ?? null);
+    // available space inside the canvas (perfectRect * pixelRatio)
+    const view = computed<Rect>(() => {
+      const [, , width, height] = perfectRect.value;
+      return scaleRect([0, 0, width, height], pixelRatio.value);
+    });
+    // size of view
+    const viewSize = computed<Size>(() => {
+      const [, , width, height] = view.value;
+      return [width, height];
+    });
+    // Part of the view that is visible (in the viewport)
+    const viewVisible = computed<Rect | false>(() => {
+      if (viewport.value === null) {
+        return view.value;
       }
-    );
+      const [x, y, width, height] = perfectRect.value;
+      const offsetViewport = offsetRect(viewport.value, -x, -y);
+      const visibleRect = clipRect([0, 0, width, height], offsetViewport) ?? false;
+      if (visibleRect === false) {
+        return false;
+      }
+      return scaleRect(visibleRect, pixelRatio.value);
+    });
 
-    const [, , styleWidth, styleHeight] = internal.rect;
-    const [width, height] = internal.viewSize;
-    const canvas = new CanvasElement({ styleWidth, styleHeight, width, height });
+    const [, , styleWidth, styleHeight] = rect.value;
+    const [width, height] = viewSize.value;
+    const canvas = CanvasElement({ styleWidth, styleHeight, width, height });
 
-    autorun(function updateCanvasStyleSize() {
-      const [, , styleWidth, styleHeight] = internal.rect;
+    effect(function updateCanvasStyleSize() {
+      const [, , styleWidth, styleHeight] = rect.value;
       canvas.setStyleSize(styleWidth, styleHeight);
     });
 
-    autorun(function updateCanvasSize() {
-      const [width, height] = internal.viewSize;
+    effect(function updateCanvasSize() {
+      const [width, height] = viewSize.value;
       canvas.setSize(width, height);
     });
 
-    this.element = canvas.element;
-    this.context = canvas.context;
-    this.internal = internal;
+    let synching = false;
+    const element = canvas.element;
+    const context = canvas.context;
 
-    makeAutoObservable<this, 'internal' | 'element'>(this, {
-      internal: false,
-      element: false,
-      context: false,
-      update: action.bound,
-    });
-  }
+    return {
+      get rect() {
+        return rect.value;
+      },
+      get rectRounded() {
+        return perfectRect.value;
+      },
+      get view() {
+        return view.value;
+      },
+      get viewVisible() {
+        return viewVisible.value;
+      },
+      get viewport() {
+        return viewport.value;
+      },
+      get pixelRatio() {
+        return pixelRatio.value;
+      },
+      get element() {
+        return element;
+      },
+      get context() {
+        return context;
+      },
+      update,
+      syncWithElement,
+    };
 
-  /**
-   * Update rect, viewport and pixelRatio
-   * @returns true if something changed
-   */
-  public update(options: Options): boolean {
-    if (this.synching) {
-      throw new Error('Cannot update canvas while synching');
+    /**
+     * Update rect, viewport and pixelRatio
+     * @returns true if something changed
+     */
+    function update(options: Options): boolean {
+      if (synching) {
+        throw new Error('Cannot update canvas while synching');
+      }
+      return updateInternal(options);
     }
-    return this.updateInternal(options);
-  }
 
-  public get rect(): Rect {
-    return this.internal.rect;
-  }
-
-  public get rectRounded(): Rect {
-    return this.internal.perfectRect;
-  }
-
-  public get view(): Rect {
-    return this.internal.view;
-  }
-
-  public get viewVisible(): Rect | false {
-    return this.internal.viewVisible;
-  }
-
-  public get viewport(): Rect | null {
-    return this.internal.viewport;
-  }
-
-  public get pixelRatio(): number {
-    return this.internal.pixelRatio;
-  }
-
-  /**
-   * Synchronize the canvas with an element
-   * It also add the canvas to the element
-   */
-  public syncWithElement(container: HTMLElement, scheduler: Scheduler) {
-    if (this.synching) {
-      throw new Error('Canvas is already synching');
-    }
-    this.synching = true;
-    const elemStyles = window.getComputedStyle(container);
-    if (!VALID_POSITIONS.includes(elemStyles.position)) {
-      throw new Error(
-        `Element should have one of the following position ${VALID_POSITIONS.join(
-          ', '
-        )} ! It currently has ${elemStyles.position}`
-      );
-    }
-    const rect = convertDOMRectToRect(container.getBoundingClientRect());
-    const viewport = Viewport.instance.rect;
-    const pixelRatio = window.devicePixelRatio;
-    this.updateInternal({ rect, viewport, pixelRatio });
-    container.appendChild(this.element);
-    const unsub = scheduler.onUpdate(() => {
+    /**
+     * Synchronize the canvas with an element
+     * It also add the canvas to the element
+     */
+    function syncWithElement(container: HTMLElement, scheduler: IScheduler) {
+      if (synching) {
+        throw new Error('Canvas is already synching');
+      }
+      synching = true;
+      const elemStyles = window.getComputedStyle(container);
+      if (!VALID_POSITIONS.includes(elemStyles.position)) {
+        throw new Error(
+          `Element should have one of the following position ${VALID_POSITIONS.join(
+            ', '
+          )} ! It currently has ${elemStyles.position}`
+        );
+      }
       const rect = convertDOMRectToRect(container.getBoundingClientRect());
       const viewport = Viewport.instance.rect;
       const pixelRatio = window.devicePixelRatio;
-      const changed = this.updateInternal({ rect, viewport, pixelRatio });
-      if (changed) {
-        scheduler.requestFrameRender(this.view);
+      updateInternal({ rect, viewport, pixelRatio });
+      container.appendChild(element);
+      const unsub = scheduler.onUpdate(() => {
+        const rect = convertDOMRectToRect(container.getBoundingClientRect());
+        const viewport = Viewport.instance.rect;
+        const pixelRatio = window.devicePixelRatio;
+        const changed = updateInternal({ rect, viewport, pixelRatio });
+        if (changed) {
+          scheduler.requestFrameRender(view.value);
+        }
+      });
+
+      return () => {
+        unsub();
+        container.removeChild(element);
+        synching = true;
+      };
+    }
+
+    function updateInternal(options: Options): boolean {
+      let changed = false;
+      if (options.rect && rectsEqual(rect.value, options.rect) === false) {
+        rect.value = options.rect;
+        changed = true;
       }
-    });
-
-    return () => {
-      unsub();
-      container.removeChild(this.element);
-      this.synching = true;
-    };
+      if (options.viewport && rectsEqual(viewport.value, options.viewport) === false) {
+        viewport.value = options.viewport;
+        changed = true;
+      }
+      if (options.pixelRatio && options.pixelRatio !== pixelRatio.value) {
+        pixelRatio.value = options.pixelRatio;
+        changed = true;
+      }
+      return changed;
+    }
   }
-
-  private updateInternal({
-    rect = this.rect,
-    viewport = this.viewport,
-    pixelRatio = this.pixelRatio,
-  }: Options): boolean {
-    let changed = false;
-    if (rectsEqual(this.internal.rect, rect) === false) {
-      this.internal.rect = rect;
-      changed = true;
-    }
-    if (rectsEqual(this.internal.viewport, viewport) === false) {
-      this.internal.viewport = viewport;
-      changed = true;
-    }
-    if (this.internal.pixelRatio !== pixelRatio) {
-      this.internal.pixelRatio = pixelRatio;
-      changed = true;
-    }
-    return changed;
-  }
-}
+})();

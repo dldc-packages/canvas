@@ -72,16 +72,17 @@ export interface InternalPointer {
   [TRACKERS]: Array<PointerTracker>;
 }
 
-export class EventsManager {
-  public getPointers: () => Array<InternalPointer>;
-  public onActivePointer: (handler: (event: PointerActiveEvent) => void) => Unsubscribe;
-  public onPointerMove: (handler: (event: PointerHoverEvent) => void) => Unsubscribe;
-  public onWheel: (handler: (event: ZenWheelEvent) => void) => Unsubscribe;
+export interface IEventsManager {
+  getPointers(): ReadonlyArray<InternalPointer>;
+  onActivePointer(handler: (event: PointerActiveEvent) => void): Unsubscribe;
+  onPointerMove(handler: (event: PointerHoverEvent) => void): Unsubscribe;
+  onWheel(handler: (event: ZenWheelEvent) => void): Unsubscribe;
+}
 
-  /**
-   * Pass window as elem to allow pointer to move outside of the window
-   */
-  constructor(el: HTMLElement | Window) {
+export const EventsManager = (() => {
+  return { create };
+
+  function create(el: HTMLElement | Window): IEventsManager {
     const handlers = {
       onActivePointer: Subscription<PointerActiveEvent>(),
       onPointerMove: Subscription<PointerHoverEvent>(),
@@ -94,39 +95,26 @@ export class EventsManager {
 
     addGlobalListeners();
 
-    this.getPointers = () => {
-      return pointers;
+    return {
+      getPointers,
+      onActivePointer: handlers.onActivePointer.subscribe,
+      onPointerMove: handlers.onPointerMove.subscribe,
+      onWheel: handlers.onWheel.subscribe,
     };
-    this.onActivePointer = (handler) => handlers.onActivePointer.subscribe(handler);
-    this.onPointerMove = (handler) => handlers.onPointerMove.subscribe(handler);
-    this.onWheel = (handler) => handlers.onWheel.subscribe(handler);
+
+    function getPointers() {
+      return pointers;
+    }
 
     function addGlobalListeners() {
-      (el as HTMLElement).addEventListener('pointerenter', handlePointerEnter, {
-        passive: true,
-        capture: false,
-      });
-      (el as HTMLElement).addEventListener('pointerdown', handlePointerDown, {
-        passive: true,
-        capture: false,
-      });
-      (el as HTMLElement).addEventListener('pointerup', handlePointerUp, {
-        passive: true,
-        capture: false,
-      });
-      (el as HTMLElement).addEventListener('pointermove', handlePointerMove, {
-        passive: true,
-        capture: false,
-      });
-      (el as HTMLElement).addEventListener('pointercancel', handlePointerCancel, {
-        passive: true,
-        capture: false,
-      });
-      (el as HTMLElement).addEventListener('pointerleave', handlePointerLeave, {
-        passive: true,
-        capture: false,
-      });
-      (el as HTMLElement).addEventListener('wheel', handleWheel, { passive: true, capture: false });
+      const htmlEl = el as HTMLElement;
+      htmlEl.addEventListener('pointerenter', handlePointerEnter, { passive: true, capture: false });
+      htmlEl.addEventListener('pointerdown', handlePointerDown, { passive: true, capture: false });
+      htmlEl.addEventListener('pointerup', handlePointerUp, { passive: true, capture: false });
+      htmlEl.addEventListener('pointermove', handlePointerMove, { passive: true, capture: false });
+      htmlEl.addEventListener('pointercancel', handlePointerCancel, { passive: true, capture: false });
+      htmlEl.addEventListener('pointerleave', handlePointerLeave, { passive: true, capture: false });
+      htmlEl.addEventListener('wheel', handleWheel, { passive: true, capture: false });
     }
 
     function trackPointer(events: Partial<PointerTracker>): PointerTrackerInstance {
@@ -336,12 +324,7 @@ export class EventsManager {
       handlers.onPointerMove.emit({ pointers });
     }
 
-    function updatePointer(
-      pointer: InternalPointer,
-      clientX: number,
-      clientY: number,
-      active: boolean | null
-    ) {
+    function updatePointer(pointer: InternalPointer, clientX: number, clientY: number, active: boolean | null) {
       pointer.x = clientX;
       pointer.y = clientY;
       if (active !== null) {
@@ -392,4 +375,4 @@ export class EventsManager {
       });
     }
   }
-}
+})();

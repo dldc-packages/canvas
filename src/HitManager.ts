@@ -10,7 +10,7 @@ export interface HitObject<T> {
   color: string;
 }
 
-export type Hit<T> = (
+export type HitFn<T> = (
   draw: Draw,
   time: number,
   pointerId: number,
@@ -18,31 +18,28 @@ export type Hit<T> = (
   y: number
 ) => Set<T> | undefined;
 
-export class HitManager<T> {
-  public static merge<T>(...managers: Array<HitManager<T>>): Hit<T> {
-    return (draw, time, pointerId, x, y) => {
-      for (let i = 0; i < managers.length; i++) {
-        const result = managers[i].hit(draw, time, pointerId, x, y);
-        if (result) {
-          return result;
-        }
-      }
-      return undefined;
-    };
-  }
+export interface IHitManager<T> {
+  readonly hit: HitFn<T>;
+  create(): HitObject<T>;
+}
 
-  public hit: Hit<T>;
-  public create: () => HitObject<T>;
+export const HitManager = (() => {
+  return { create, merge };
 
-  constructor() {
-    const canvas = new CanvasElement({ width: 1, height: 1, name: 'hit' });
+  function create<T>(): IHitManager<T> {
+    const canvas = CanvasElement({ width: 1, height: 1, name: 'hit' });
     const getColor = randomSequenceOfUniqueColor();
     const valuesMap = new Map<string, Set<T>>();
 
     let currentTime = 0;
     let pointersCache: Map<number, { x: number; y: number; color: string | null }> = new Map();
 
-    this.hit = (draw, time, pointerId, x, y) => {
+    return {
+      hit,
+      create,
+    };
+
+    function hit(draw: Draw, time: number, pointerId: number, x: number, y: number) {
       if (time !== currentTime) {
         // time changed, clear pointer cache
         currentTime = time;
@@ -53,9 +50,9 @@ export class HitManager<T> {
         return valuesMap.get(color);
       }
       return undefined;
-    };
+    }
 
-    this.create = (): HitObject<T> => {
+    function create(): HitObject<T> {
       const color = getColor();
       const values = new Set<T>();
       valuesMap.set(color, values);
@@ -69,7 +66,7 @@ export class HitManager<T> {
         responders: values,
         color,
       };
-    };
+    }
 
     function getHitColor(
       draw: Draw,
@@ -97,4 +94,16 @@ export class HitManager<T> {
       return color;
     }
   }
-}
+
+  function merge<T>(...managers: Array<IHitManager<T>>): HitFn<T> {
+    return (draw, time, pointerId, x, y) => {
+      for (let i = 0; i < managers.length; i++) {
+        const result = managers[i].hit(draw, time, pointerId, x, y);
+        if (result) {
+          return result;
+        }
+      }
+      return undefined;
+    };
+  }
+})();

@@ -1,57 +1,61 @@
-import { RootScheduler, EventsManager, Canvas } from '../src';
-import { ChildScheduler } from '../src/Scheduler';
-import { TransformBuilder } from '../src/utils/Transform';
+import { effect, signal } from '@preact/signals-core';
+import { Scheduler, EventsManager, Canvas, Transform } from '../src/mod';
 import { smoothShape, smoothStepsFromRect } from './SmoothShape';
 
 const rootEl = document.getElementById('root')!;
 
-const evm = new EventsManager(window);
+const evm = EventsManager.create(window);
 
 // ==========================
 
-const rootScheduler = new RootScheduler();
+const rootScheduler = Scheduler.root();
 
 const mainBox = document.createElement('div');
 mainBox.style.position = 'fixed';
 mainBox.style.inset = '0';
 rootEl.appendChild(mainBox);
-const mainCanvas = new Canvas();
+const mainCanvas = Canvas();
 mainCanvas.syncWithElement(mainBox, rootScheduler);
 
-rootScheduler.onUpdate(() => {
-  // rootScheduler.requestFrameRender(mainCanvas.view);
-});
-
 rootScheduler.onRender(({ rects }) => {
-  // mainCanvas.context.fillStyle = 'blue';
+  mainCanvas.context.resetTransform();
+  mainCanvas.context.scale(mainCanvas.pixelRatio, mainCanvas.pixelRatio);
   rects.forEach(([x, y, w, h]) => {
+    console.log(x, y, w, h);
     mainCanvas.context.clearRect(x, y, w, h);
     mainCanvas.context.beginPath();
     mainCanvas.context.rect(x + 10, y + 10, w - 20, h - 20);
     mainCanvas.context.closePath();
     mainCanvas.context.lineWidth = 1;
-    mainCanvas.context.strokeStyle = 'blue';
+    mainCanvas.context.strokeStyle = 'yellow';
     mainCanvas.context.stroke();
-    // mainCanvas.context.drawImage(offscreenCanvas.element, )
   });
 });
 
-const offscreenScheduler = new ChildScheduler(TransformBuilder.translate(100, 100).transform);
-rootScheduler.addChild(offscreenScheduler);
+const $pos = signal({ x: 0, y: 0 });
 
-const offscreenCanvas = new Canvas({
-  rect: [100, 100, 200, 200],
-  pixelRatio: mainCanvas.pixelRatio,
+rootScheduler.onRender(() => {
+  const { x, y } = $pos.value;
+  console.log(x, y);
+
+  mainCanvas.context.fillStyle = 'red';
+  mainCanvas.context.fillRect(x - 20, y - 20, 40, 40);
 });
 
-offscreenScheduler.onUpdate(() => {
-  offscreenScheduler.requestFrameRender(offscreenCanvas.view);
+console.log(mainCanvas);
+
+effect(() => {
+  $pos.value;
+  rootScheduler.requestFrameRender(mainCanvas.rectRounded);
 });
 
-offscreenScheduler.onRender(({ t, rects }) => {
-  offscreenCanvas.context.fillStyle = 'red';
-  const x = Math.sin(t / 1000) * 100;
-  offscreenCanvas.context.fillRect(x, 0, 50, 50);
+evm.onActivePointer((e) => {
+  const tracker = e.track({
+    onPointerMove: ({ x, y }) => {
+      $pos.value = { x, y };
+    },
+  });
+  tracker.capture();
 });
 
 // const sch2 = new ChildScheduler();

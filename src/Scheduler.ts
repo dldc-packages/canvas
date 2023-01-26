@@ -1,6 +1,6 @@
 import { Rect, transformRects } from './utils/Rect';
 import { SubscribeMethod, Subscription } from 'suub';
-import { Transform } from './utils/Transform';
+import { ITransform } from './utils/Transform';
 
 // Using Symbols so that parent can access thes properties
 const ON_FRAME_UPDATE = Symbol.for('DRAAW_INTERNAL_ON_FRAME_UPDATE');
@@ -25,17 +25,37 @@ export interface UpdateData {
   t: number;
 }
 
-export interface Scheduler {
-  requestFrameRender(rect: Rect | null | false): void;
+export interface IScheduler {
   onUpdate: SubscribeMethod<UpdateData>;
   onPostUpdate: SubscribeMethod<UpdateData>;
   onRender: SubscribeMethod<RenderData>;
-  addChild(child: Scheduler): void;
-  removeChild(child: Scheduler): void;
+  /**
+   * Request a render specifying a rect
+   * If frame is null or false, it will be ignored
+   */
+  requestFrameRender(rect: Rect | null | false): void;
+  addChild(child: IScheduler): void;
+  removeChild(child: IScheduler): void;
   [ON_FRAME_UPDATE]: (t: number) => void;
   [ON_FRAME_POST_UPDATE]: (t: number) => void;
   [ON_FRAME_RENDER]: (t: number, parentRects: Array<Rect>) => Array<Rect>;
-  [ATTACH]: (parent: Scheduler) => void;
+  [ATTACH]: (parent: IScheduler) => void;
+}
+
+export interface IRootScheduler extends IScheduler {
+  getTime(): number;
+  start(): void;
+  stop(): void;
+}
+
+/**
+ * Handle child schedulers and frames rects
+ */
+export interface IChildScheduler extends IScheduler {
+  /**
+   * Update transforms
+   */
+  setTransform(transform: ITransform): void;
 }
 
 export type RootSchedulerOptions = {
@@ -47,188 +67,202 @@ export type RootSchedulerOptions = {
  * It does not have a transform
  * Most of its methods and are proxied from th rootChild scheduler
  */
-export class RootScheduler implements Scheduler {
-  private readonly rootChild = new ChildScheduler();
+export const Scheduler = (() => {
+  return {
+    root: createRoot,
+    child: createChild,
+  };
 
-  private startTime = performance.now();
-  private currentTime = this.startTime;
-  private requestedFrameId: number | null = null;
+  function createRoot({ autoStart = true }: RootSchedulerOptions = {}): IRootScheduler {
+    const rootChild = createChild();
 
-  constructor({ autoStart = true }: RootSchedulerOptions = {}) {
+    let startTime = performance.now();
+    let currentTime = startTime;
+    let requestedFrameId: number | null = null;
+
     if (autoStart) {
-      this.start();
+      start();
+    }
+
+    return {
+      requestFrameRender: rootChild.requestFrameRender,
+      addChild: rootChild.addChild,
+      removeChild: rootChild.removeChild,
+      onRender: rootChild.onRender,
+      onUpdate: rootChild.onUpdate,
+      onPostUpdate: rootChild.onPostUpdate,
+
+      getTime,
+      start,
+      stop,
+
+      [ON_FRAME_UPDATE]: onFrameUpdate,
+      [ON_FRAME_POST_UPDATE]: onFramePostUpdate,
+      [ON_FRAME_RENDER]: onFrameRender,
+      [ATTACH]: attach,
+    };
+
+    function onFrameUpdate(t: number) {
+      return rootChild[ON_FRAME_UPDATE](t);
+    }
+
+    function onFramePostUpdate(t: number) {
+      return rootChild[ON_FRAME_POST_UPDATE](t);
+    }
+
+    function onFrameRender(t: number) {
+      return rootChild[ON_FRAME_RENDER](t, []);
+    }
+
+    function attach() {
+      throw new Error('Root scheduler cannot be attached to another scheduler');
+    }
+
+    function getTime() {
+      return currentTime;
+    }
+
+    function start() {
+      if (requestedFrameId !== null) {
+        // already running
+        return;
+      }
+      startTime = performance.now();
+      loop();
+    }
+
+    function stop() {
+      if (requestedFrameId !== null) {
+        cancelAnimationFrame(requestedFrameId);
+      }
+    }
+
+    function onFrame() {
+      const t = performance.now() - startTime;
+      currentTime = t;
+      onFrameUpdate(t);
+      onFramePostUpdate(t);
+      onFrameRender(t);
+    }
+
+    function loop() {
+      onFrame();
+      requestedFrameId = requestAnimationFrame(loop);
     }
   }
 
-  readonly requestFrameRender = this.rootChild.requestFrameRender;
-  readonly addChild = this.rootChild.addChild;
-  readonly removeChild = this.rootChild.removeChild;
-  readonly onRender = this.rootChild.onRender;
-  readonly onUpdate = this.rootChild.onUpdate;
-  readonly onPostUpdate = this.rootChild.onPostUpdate;
+  function createChild(initTransform: ITransform = []): IChildScheduler {
+    const renderSub = Subscription<RenderData>();
+    const updateSub = Subscription<UpdateData>();
+    const postUpdateSub = Subscription<UpdateData>();
 
-  readonly [ON_FRAME_UPDATE] = (t: number) => {
-    this.rootChild[ON_FRAME_UPDATE](t);
-  };
+    let children: ReadonlyArray<IScheduler> = [];
+    let nextRenderFrames: Array<Rect> = [];
+    let isRendering = false;
+    let transform: ITransform = initTransform;
+    let parent: IScheduler | null = null;
 
-  readonly [ON_FRAME_POST_UPDATE] = (t: number) => {
-    this.rootChild[ON_FRAME_POST_UPDATE](t);
-  };
+    const scheduler: IChildScheduler = {
+      onRender: renderSub.subscribe,
+      onUpdate: updateSub.subscribe,
+      onPostUpdate: postUpdateSub.subscribe,
+      setTransform,
+      requestFrameRender,
+      addChild,
+      removeChild,
+      [ON_FRAME_UPDATE]: onFrameUpdate,
+      [ON_FRAME_POST_UPDATE]: onFramePostUpdate,
+      [ON_FRAME_RENDER]: onFrameRender,
+      [ATTACH]: attach,
+    };
 
-  readonly [ON_FRAME_RENDER] = (t: number) => {
-    return this.rootChild[ON_FRAME_RENDER](t, []);
-  };
+    return scheduler;
 
-  readonly [ATTACH] = () => {
-    throw new Error('Root scheduler cannot be attached to another scheduler');
-  };
-
-  readonly getTime = () => {
-    return this.currentTime;
-  };
-
-  readonly start = () => {
-    if (this.requestedFrameId !== null) {
-      // already running
-      return;
+    function setTransform(newTransform: ITransform) {
+      transform = newTransform;
     }
-    this.startTime = performance.now();
-    this.loop();
-  };
 
-  readonly stop = () => {
-    if (this.requestedFrameId !== null) {
-      cancelAnimationFrame(this.requestedFrameId);
+    function requestFrameRender(frame: Rect | null | false) {
+      if (isRendering) {
+        console.warn('Request frame inside a frame ?');
+      }
+      if (frame === null || frame === false) {
+        return;
+      }
+      nextRenderFrames.push(frame);
     }
-  };
 
-  private readonly onFrame = () => {
-    const t = performance.now() - this.startTime;
-    this.currentTime = t;
-    this[ON_FRAME_UPDATE](t);
-    this[ON_FRAME_POST_UPDATE](t);
-    this[ON_FRAME_RENDER](t);
-  };
+    function addChild(child: IScheduler) {
+      if (children.includes(child)) {
+        return;
+      }
+      child[ATTACH](scheduler);
+      children = [...children, child];
+    }
 
-  private readonly loop = () => {
-    this.onFrame();
-    this.requestedFrameId = requestAnimationFrame(this.loop);
-  };
-}
+    function removeChild(child: IScheduler) {
+      const childIndex = children.indexOf(child);
+      if (childIndex === -1) {
+        return;
+      }
+      const copy = [...children];
+      copy.splice(childIndex, 1);
+      children = copy;
+    }
 
-/**
- * Handle child schedulers and frames rects
- */
-export class ChildScheduler implements Scheduler {
-  private readonly renderSub = Subscription<RenderData>();
-  private readonly updateSub = Subscription<UpdateData>();
-  private readonly postUpdateSub = Subscription<UpdateData>();
+    function attach(newParent: IScheduler) {
+      if (parent !== null) {
+        throw new Error('Child scheduler already attached');
+      }
+      parent = newParent;
+    }
 
-  private children: ReadonlyArray<Scheduler> = [];
-  private nextRenderFrames: Array<Rect> = [];
-  private isRendering = false;
-  private transform: Transform = [];
-  private parent: Scheduler | null = null;
+    function onFrameUpdate(t: number) {
+      // Upadate is always called
+      const currentChildren = children;
+      currentChildren.forEach((child) => {
+        child[ON_FRAME_UPDATE](t);
+      });
+      updateSub.emit({ t });
+    }
 
-  constructor(transform: Transform = []) {
-    this.setTransform(transform);
+    function onFramePostUpdate(t: number) {
+      // PostUpdate is always called
+      const currentChildren = children;
+      currentChildren.forEach((child) => {
+        child[ON_FRAME_POST_UPDATE](t);
+      });
+      postUpdateSub.emit({ t });
+    }
+
+    function onFrameRender(t: number, parentRects: Array<Rect>): Array<Rect> {
+      isRendering = true;
+      const localRects = nextRenderFrames;
+      nextRenderFrames = [];
+      const currentTransform = transform;
+      const currentChildren = children;
+
+      // Apply transform to parent rects to get local rects
+      const parentRectsTransformed = transformRects(parentRects, currentTransform);
+      // Local rects don't need to be transformed
+      const parentAndLocalRects = [...parentRectsTransformed, ...localRects];
+
+      // Render children first
+      // they returns rendered rects
+      const childRendered: Array<Rect> = [];
+      currentChildren.forEach((child) => {
+        const rendered = child[ON_FRAME_RENDER](t, parentAndLocalRects);
+        childRendered.push(...rendered);
+      });
+      const allRects = [...parentAndLocalRects, ...childRendered];
+      if (allRects.length > 0) {
+        renderSub.emit({ t, rects: allRects });
+      }
+      // Rects we did render
+      const localAndChildRects = [...localRects, ...childRendered];
+      isRendering = false;
+      // Apply inverse transform to local and child rects to return rect in parent space
+      return transformRects(localAndChildRects, currentTransform);
+    }
   }
-
-  /**
-   * Update transforms
-   */
-  readonly setTransform = (transform: Transform) => {
-    this.transform = transform;
-  };
-
-  /**
-   * Request a render specifying a rect
-   * If frame is null or false, it will be ignored
-   */
-  readonly requestFrameRender = (frame: Rect | null | false) => {
-    if (this.isRendering) {
-      console.warn('Request frame inside a frame ?');
-    }
-    if (frame === null || frame === false) {
-      return;
-    }
-    this.nextRenderFrames.push(frame);
-  };
-
-  readonly addChild = (child: Scheduler) => {
-    if (this.children.includes(child)) {
-      return;
-    }
-    child[ATTACH](this);
-    this.children = [...this.children, child];
-  };
-
-  readonly removeChild = (child: Scheduler) => {
-    const childIndex = this.children.indexOf(child);
-    if (childIndex === -1) {
-      return;
-    }
-    const copy = [...this.children];
-    copy.splice(childIndex, 1);
-    this.children = copy;
-  };
-
-  readonly onRender = this.renderSub.subscribe;
-  readonly onUpdate = this.updateSub.subscribe;
-  readonly onPostUpdate = this.postUpdateSub.subscribe;
-
-  readonly [ATTACH] = (parent: Scheduler) => {
-    if (this.parent !== null) {
-      throw new Error('Child scheduler already attached');
-    }
-    this.parent = parent;
-  };
-
-  readonly [ON_FRAME_UPDATE] = (t: number) => {
-    // Upadate is always called
-    const children = this.children;
-    children.forEach((child) => {
-      child[ON_FRAME_UPDATE](t);
-    });
-    this.updateSub.emit({ t });
-  };
-
-  readonly [ON_FRAME_POST_UPDATE] = (t: number) => {
-    // PostUpdate is always called
-    const children = this.children;
-    children.forEach((child) => {
-      child[ON_FRAME_POST_UPDATE](t);
-    });
-    this.postUpdateSub.emit({ t });
-  };
-
-  readonly [ON_FRAME_RENDER] = (t: number, parentRects: Array<Rect>): Array<Rect> => {
-    this.isRendering = true;
-    const localRects = this.nextRenderFrames;
-    this.nextRenderFrames = [];
-    const transform = this.transform;
-    const children = this.children;
-
-    // Apply transform to parent rects to get local rects
-    const parentRectsTransformed = transformRects(parentRects, transform);
-    // Local rects don't need to be transformed
-    const parentAndLocalRects = [...parentRectsTransformed, ...localRects];
-
-    // Render children first
-    // they returns rendered rects
-    const childRendered: Array<Rect> = [];
-    children.forEach((child) => {
-      const rendered = child[ON_FRAME_RENDER](t, parentAndLocalRects);
-      childRendered.push(...rendered);
-    });
-    const allRects = [...parentAndLocalRects, ...childRendered];
-    if (allRects.length > 0) {
-      this.renderSub.emit({ t, rects: allRects });
-    }
-    // Rects we did render
-    const localAndChildRects = [...localRects, ...childRendered];
-    this.isRendering = false;
-    // Apply inverse transform to local and child rects to return rect in parent space
-    return transformRects(localAndChildRects, transform);
-  };
-}
+})();
