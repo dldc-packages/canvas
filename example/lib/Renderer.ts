@@ -1,7 +1,7 @@
+import { EventsManager } from './EventsManager';
 import { ILayer, Layer } from './Layer';
 import { IScreduler, Screduler } from './Scheduler';
 import { Tools } from './Tools';
-import { toArray } from './utils';
 import { IView, View } from './View';
 
 export interface IRenderer<RootLayer extends ILayer> {
@@ -16,6 +16,8 @@ export interface RendererOptions<RootLayer extends ILayer> {
   name?: string;
   // The element where the canvas will be appended
   target: HTMLElement;
+  // element where events will be listened (default: target)
+  eventsTarget?: HTMLElement;
   // start the animation loop (default: true)
   autoStart?: boolean;
 }
@@ -25,6 +27,7 @@ export const Renderer = (() => {
 
   function create<RootLayer extends ILayer>({
     target,
+    eventsTarget = target,
     name,
     layer,
     autoStart = true,
@@ -32,8 +35,22 @@ export const Renderer = (() => {
     const view = View({ target, name });
     const tools = Tools.create(view.context);
     const rootLayer = layer;
+    const rootLayerLifecycles = Layer.mount(rootLayer.ref, tools);
+    const eventsManager = EventsManager.create(eventsTarget);
 
     const scheduler = Screduler.create({ autoStart, onFrame });
+
+    eventsManager.onActivePointer((event) => {
+      rootLayerLifecycles.onActivePointer?.(event);
+    });
+
+    eventsManager.onPointerHover((event) => {
+      rootLayerLifecycles.onPointerHover?.(event);
+    });
+
+    eventsManager.onWheel((event) => {
+      rootLayerLifecycles.onWheel?.(event);
+    });
 
     return {
       layer: rootLayer,
@@ -45,10 +62,23 @@ export const Renderer = (() => {
       view.update();
       view.prepare();
       const currentView = view.$innerRect.value;
-      const renderRects = toArray(Layer.unwrap(rootLayer.ref).onRect({ t, view: currentView, tools }));
+      const renderRects = rootLayerLifecycles.update?.({ t, view: currentView }) ?? [];
       renderRects.forEach((renderRect) => {
-        Layer.unwrap(rootLayer.ref).onRender({ t, view: currentView, rect: renderRect, tools });
+        rootLayerLifecycles.draw?.({ t, view: currentView, rect: renderRect, ctx: view.context });
       });
+      /**
+       * TODO: getPointers, for each pointer
+       * - if position changed or pointer is in one of the renderRects
+       * - call hit to draw on the hit layer
+       * - in Group, test hit pixel to see if we have a new match
+       * - collect the matches then dispatch the event in reverse order (top to bottom)
+       * - For Group(Item1, Item2, Group(Item3, Item4))
+       *   - Item1 hit -> new match ?
+       *   - Item2 hit -> new match ?
+       *   - Item3 hit -> new match ?
+       *   - Item4 hit -> new match ?
+       *   - dispatch event if match on Item4, Item3, Item2, Item1
+       */
     }
   }
 })();

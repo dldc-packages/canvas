@@ -1,3 +1,4 @@
+import { DraawWheelEvent, PointerActiveEvent, PointerHoverEvent } from './EventsManager';
 import { IRect } from './Geometry';
 import { Tools } from './Tools';
 
@@ -7,102 +8,47 @@ export interface ILayer {
 
 const INTERNAL = Symbol.for('DRAAW_INTERNAL');
 
-export type OnRectResult = null | IRect | Array<IRect>;
+// Update should return an array of rects that need to be redrawn
+export type UpdateParams = { t: number; view: IRect };
+export type Update = (params: UpdateParams) => null | Array<IRect>;
 
-export interface OnRectParams {
-  t: number;
-  view: IRect;
-  tools: Tools;
+export type DrawParams = { t: number; view: IRect; rect: IRect; ctx: CanvasRenderingContext2D };
+export type Draw = (params: DrawParams) => void;
+
+export type Cleanup = () => void;
+
+export type OnActivePointer = (event: PointerActiveEvent) => void;
+
+export type OnPointerHover = (event: PointerHoverEvent) => void;
+
+export type OnWheel = (event: DraawWheelEvent) => void;
+
+export interface ILayerLifecycles {
+  readonly update?: Update;
+  readonly draw?: Draw;
+  readonly hit?: Draw;
+
+  readonly onActivePointer?: OnActivePointer;
+  readonly onPointerHover?: OnPointerHover;
+  readonly onWheel?: OnWheel;
+
+  readonly cleanup?: Cleanup;
 }
 
-export interface OnRenderParams {
-  t: number;
-  view: IRect;
-  rect: IRect;
-  tools: Tools;
-}
-
-export type OnRect = (params: OnRectParams) => OnRectResult;
-
-export type OnRender = (params: OnRenderParams) => void;
-
-export interface ILayerRefInner {
-  readonly onRect: OnRect;
-  readonly onRender: OnRender;
-}
+export type ILayerFn = (tools: Tools) => ILayerLifecycles;
 
 export interface ILayerRef {
-  [INTERNAL]: ILayerRefInner;
+  [INTERNAL]: ILayerFn;
 }
 
 export const Layer = (() => {
-  return { createRef, unwrap };
+  return { createRef, mount };
 
-  function createRef(inner: ILayerRefInner): ILayerRef {
-    return {
-      [INTERNAL]: inner,
-    };
+  function createRef(fn: ILayerFn): ILayerRef {
+    return { [INTERNAL]: fn };
   }
 
-  function unwrap(ref: ILayerRef): ILayerRefInner {
-    return ref[INTERNAL];
+  function mount(ref: ILayerRef, tools: Tools): ILayerLifecycles {
+    return ref[INTERNAL](tools);
   }
 })();
-
-// export interface OnRectParams {
-//   t: number;
-//   view: IRect;
-//   tools: Tools;
-// }
-
-// export interface OnRenderParams {
-//   t: number;
-//   view: IRect;
-//   rect: IRect;
-//   tools: Tools;
-// }
-
-// export interface OnAttachResult {
-//   tools?: Tools;
-//   cleanup?: () => void;
-// }
-
-// export interface LayerOptions {
-//   // Given the current view of the layer, return the rect or rects that should be used to render the layer
-//   // or null if the layer should not be rendered
-//   onRect?: (params: OnRectParams) => OnRectResult;
-//   onRender?: (params: OnRenderParams) => void;
-// }
-
-// export const Layer = (() => {
-//   return { create };
-
-//   function create({ onRect, onRender }: LayerOptions = {}): ILayer {
-//     const layer: ILayer = {
-//       ref: Ref.create({
-//         onRect: onRectInternal,
-//         onRender: onRenderInternal,
-//       }),
-//     };
-
-//     return layer;
-
-//     function onRectInternal(t: number, parentView: IRect, parentTools: Tools): OnRectResult {
-//       if (onRect) {
-//         return onRect({ t, view: parentView, tools: parentTools });
-//       }
-//       return parentView;
-//     }
-
-//     function onRenderInternal(t: number, parentView: IRect, renderRect: IRect, parentTools: Tools) {
-//       const clipped = Geometry.Rect.clip(renderRect, parentView);
-//       if (!clipped) {
-//         return;
-//       }
-//       const params: OnRenderParams = { t, view: parentView, rect: clipped, tools: parentTools };
-//       if (onRender) {
-//         onRender(params);
-//       }
-//     }
-//   }
-// })();

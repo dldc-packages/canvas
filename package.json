@@ -42,6 +42,7 @@
   },
   "dependencies": {
     "@preact/signals-core": "^1.2.3",
+    "humpf": "^4.0.0-8",
     "miid": "^6.0.3",
     "suub": "^3.2.1"
   },

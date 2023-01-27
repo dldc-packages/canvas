@@ -2730,6 +2730,11 @@ human-signals@^2.1.0:
   resolved "https://registry.yarnpkg.com/human-signals/-/human-signals-2.1.0.tgz#dc91fcba42e4d06e4abaed33b3e7a3c02f514ea0"
   integrity sha512-B4FFZ6q/T2jhhksgkbEW3HBvWIfDW85snkQgawt07S7J5QXTk6BkNV+0yAeZrM5QpMAdYlocGoljn0sJ/WQkFw==
 
+humpf@^4.0.0-8:
+  version "4.0.0-8"
+  resolved "https://registry.yarnpkg.com/humpf/-/humpf-4.0.0-8.tgz#1418863c757432a578d6ad40ef170e26e231ca36"
+  integrity sha512-jPVb1m5jbheMgglRXrCoAvADntJ8o+LCM/3XksU/+U8TbRfWcT41yVXPZwuQJ19QeLRP7bVvQT8SMf67Z5g8ww==
+
 iconv-lite@^0.4.24:
   version "0.4.24"
   resolved "https://registry.yarnpkg.com/iconv-lite/-/iconv-lite-0.4.24.tgz#2022b4b25fbddc21d2f524974a474aafe733908b"
