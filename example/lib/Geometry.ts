@@ -14,6 +14,12 @@ export const Geometry = (() => {
       intersect: intersectRect,
       equal: rectsEqual,
       expand: expandRect,
+      toBox: rectToBox,
+      fromBox: boxToRect,
+    },
+    Box: {
+      toRect: boxToRect,
+      fromRect: rectToBox,
     },
   };
 
@@ -67,5 +73,15 @@ export const Geometry = (() => {
 
   function domRectToRect(rect: DOMRect): IRect {
     return [rect.x, rect.y, rect.width, rect.height];
+  }
+
+  function rectToBox(rect: IRect): IBox {
+    const [x, y, w, h] = rect;
+    return [x, y, x + w, y + h];
+  }
+
+  function boxToRect(box: IBox): IRect {
+    const [left, top, right, bottom] = box;
+    return [left, top, right - left, bottom - top];
   }
 })();

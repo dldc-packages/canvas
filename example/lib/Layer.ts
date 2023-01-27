@@ -1,4 +1,3 @@
-import { DraawWheelEvent, PointerActiveEvent, PointerHoverEvent } from './EventsManager';
 import { IRect } from './Geometry';
 import { Tools } from './Tools';
 
@@ -17,20 +16,14 @@ export type Draw = (params: DrawParams) => void;
 
 export type Cleanup = () => void;
 
-export type OnActivePointer = (event: PointerActiveEvent) => void;
-
-export type OnPointerHover = (event: PointerHoverEvent) => void;
-
-export type OnWheel = (event: DraawWheelEvent) => void;
+export type Respond = (hitColor: string | null, event: RespondEvent) => void;
 
 export interface ILayerLifecycles {
+  readonly hit?: Draw;
+  readonly respond?: Respond;
+
   readonly update?: Update;
   readonly draw?: Draw;
-  readonly hit?: Draw;
-
-  readonly onActivePointer?: OnActivePointer;
-  readonly onPointerHover?: OnPointerHover;
-  readonly onWheel?: OnWheel;
 
   readonly cleanup?: Cleanup;
 }

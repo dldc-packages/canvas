@@ -1,4 +1,4 @@
-import { DraawWheelEvent, PointerActiveEvent, PointerHoverEvent } from './EventsManager';
+import { DraawWheelEvent, PointerActiveEvent, PointerHoverEvent } from '../../src/EventsManager';
 import { IRect } from './Geometry';
 import { DrawParams, ILayer, ILayerLifecycles, Layer, UpdateParams } from './Layer';
 import { List } from './List';

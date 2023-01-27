@@ -38,22 +38,22 @@ function Rect(): ILayer {
       const isHovered = Variable.create(false);
 
       // TODO
-      const hitItem = tools.createHit();
+      // const hitItem = tools.createHit();
 
-      hitItem.onPointerEnter(() => {
-        isHovered.value = true;
-      });
+      // hitItem.onPointerEnter(() => {
+      //   isHovered.value = true;
+      // });
 
-      hitItem.onPointerLeave(() => {
-        isHovered.value = false;
-      });
+      // hitItem.onPointerLeave(() => {
+      //   isHovered.value = false;
+      // });
 
       let x = 0;
 
       return {
         cleanup() {
           clearInterval(timer);
-          hitItem.cleanup();
+          // hitItem.cleanup();
         },
         update({ view, t }) {
           x = xSeq.spring.position(t);
@@ -66,13 +66,9 @@ function Rect(): ILayer {
           ctx.fillStyle = 'red';
           ctx.fillRect(x, y, 100, 100);
         },
-        hit({ t, rect, ctx }) {
-          ctx.fillStyle = hitItem.color;
-          ctx.fillRect(x, y, 100, 100);
-        },
-        onPointerHover({ pointers }) {
-          // const x = xSeq.spring.position(t);
-          // isHovered.value = pointers.some((p) => p.x);
+        hit() {
+          // ctx.fillStyle = hitItem.color;
+          // ctx.fillRect(x, y, 100, 100);
         },
       };
     }),

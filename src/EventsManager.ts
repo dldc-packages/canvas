@@ -51,7 +51,7 @@ export interface PointerHoverEvent {
   pointers: Array<PointerHoverEventPointer>;
 }
 
-export interface ZenWheelEvent {
+export interface DraawWheelEvent {
   pointerId: number;
   x: number;
   y: number;
@@ -75,8 +75,8 @@ export interface InternalPointer {
 export interface IEventsManager {
   getPointers(): ReadonlyArray<InternalPointer>;
   onActivePointer(handler: (event: PointerActiveEvent) => void): Unsubscribe;
-  onPointerMove(handler: (event: PointerHoverEvent) => void): Unsubscribe;
-  onWheel(handler: (event: ZenWheelEvent) => void): Unsubscribe;
+  onPointerHover(handler: (event: PointerHoverEvent) => void): Unsubscribe;
+  onWheel(handler: (event: DraawWheelEvent) => void): Unsubscribe;
 }
 
 export const EventsManager = (() => {
@@ -86,7 +86,7 @@ export const EventsManager = (() => {
     const handlers = {
       onActivePointer: Subscription<PointerActiveEvent>(),
       onPointerMove: Subscription<PointerHoverEvent>(),
-      onWheel: Subscription<ZenWheelEvent>(),
+      onWheel: Subscription<DraawWheelEvent>(),
     };
 
     const pointers: Array<InternalPointer> = [];
@@ -98,7 +98,7 @@ export const EventsManager = (() => {
     return {
       getPointers,
       onActivePointer: handlers.onActivePointer.subscribe,
-      onPointerMove: handlers.onPointerMove.subscribe,
+      onPointerHover: handlers.onPointerMove.subscribe,
       onWheel: handlers.onWheel.subscribe,
     };
 

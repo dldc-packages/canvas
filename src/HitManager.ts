@@ -1,6 +1,5 @@
-import { randomSequenceOfUniqueColor } from './utils/Utils';
-import { CanvasElement } from './canvas/CanvasElement';
-import { Draw } from './types';
+import { IRect } from './Geometry';
+import { Random } from './Random';
 
 export type Unregister = () => void;
 
@@ -10,13 +9,9 @@ export interface HitObject<T> {
   color: string;
 }
 
-export type HitFn<T> = (
-  draw: Draw,
-  time: number,
-  pointerId: number,
-  x: number,
-  y: number
-) => Set<T> | undefined;
+type Draw = (t: number, rect: IRect) => void;
+
+export type HitFn<T> = (draw: Draw, time: number, pointerId: number, x: number, y: number) => Set<T> | undefined;
 
 export interface IHitManager<T> {
   readonly hit: HitFn<T>;
@@ -27,8 +22,11 @@ export const HitManager = (() => {
   return { create, merge };
 
   function create<T>(): IHitManager<T> {
-    const canvas = CanvasElement({ width: 1, height: 1, name: 'hit' });
-    const getColor = randomSequenceOfUniqueColor();
+    const canvas = document.createElement('canvas');
+    canvas.width = 1;
+    canvas.height = 1;
+    const context = canvas.getContext('2d')!;
+    const getColor = Random.sequenceOfUniqueColor();
     const valuesMap = new Map<string, Set<T>>();
 
     let currentTime = 0;
@@ -68,28 +66,21 @@ export const HitManager = (() => {
       };
     }
 
-    function getHitColor(
-      draw: Draw,
-      time: number,
-      pointerId: number,
-      x: number,
-      y: number
-    ): string | null {
+    function getHitColor(draw: Draw, time: number, pointerId: number, x: number, y: number): string | null {
       const cache = pointersCache.get(pointerId);
       if (cache && cache.x === x && cache.y === y) {
         return cache.color;
       }
-      canvas.context.resetTransform();
-      canvas.context.clearRect(0, 0, 1, 1);
-      canvas.context.translate(-x, -y);
-      draw(time, [[x, y, 1, 1]]);
-      const res = canvas.context.getImageData(0, 0, 1, 1);
+      context.resetTransform();
+      context.clearRect(0, 0, 1, 1);
+      context.translate(-x, -y);
+      draw(time, [x, y, 1, 1]);
+      const res = context.getImageData(0, 0, 1, 1);
       const r = res.data[0];
       const g = res.data[1];
       const b = res.data[2];
       const o = res.data[3];
-      const color =
-        o === 0 ? null : '#' + ('000000' + ((r << 16) | (g << 8) | b).toString(16)).slice(-6);
+      const color = o === 0 ? null : '#' + ('000000' + ((r << 16) | (g << 8) | b).toString(16)).slice(-6);
       pointersCache.set(pointerId, { x, y, color });
       return color;
     }
