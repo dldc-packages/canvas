@@ -51,13 +51,15 @@ export const Renderer = (() => {
         rootLayerLifecycles.event?.(event);
       });
 
-      view.update();
+      const resized = view.update();
       view.prepare();
 
-      const currentView = view.$innerRect.value;
+      const currentView = view.view;
 
       const renderRects = rootLayerLifecycles.update?.({ t, view: currentView }) ?? [];
-      renderRects.forEach((renderRect) => {
+      // If we resized, we need to redraw the whole view
+      const actualRenderRects = resized ? [currentView] : renderRects;
+      actualRenderRects.forEach((renderRect) => {
         rootLayerLifecycles.draw?.({ t, view: currentView, rect: renderRect, ctx: view.context });
       });
     }

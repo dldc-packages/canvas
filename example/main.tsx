@@ -1,6 +1,6 @@
 import { SpringSequence } from 'humpf';
-import { Group, HitResponder, ILayer, ILayerLifecycles, Layer, Renderer } from './lib/mod';
-import { Variable } from './lib/Variable';
+import { Group, HitResponder, ILayer, ILayerLifecycles, Layer, Renderer } from '../src/mod';
+import { Variable } from './Variable';
 
 const rootEl = document.getElementById('root')!;
 

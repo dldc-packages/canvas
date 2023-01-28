@@ -5,7 +5,6 @@ export type IPosition = readonly [x: number, y: number];
 
 export const Geometry = (() => {
   return {
-    domRectToRect,
     Rect: {
       round: roundRect,
       scale: scaleRect,
@@ -16,10 +15,21 @@ export const Geometry = (() => {
       expand: expandRect,
       toBox: rectToBox,
       fromBox: boxToRect,
+      toSize: rectToSize,
+      fromSize: sizeToRect,
+      fromDomRect: domRectToRect,
     },
     Box: {
       toRect: boxToRect,
       fromRect: rectToBox,
+    },
+    Size: {
+      scale: scaleSize,
+      toRect: sizeToRect,
+      fromRect: rectToSize,
+      fromDomRect: domRectToSize,
+      equal: sizesEqual,
+      round: roundSize,
     },
   };
 
@@ -60,6 +70,9 @@ export const Geometry = (() => {
     if (left === null || right === null) {
       return left === right;
     }
+    if (left === right) {
+      return true;
+    }
     return left[0] === right[0] && left[1] === right[1] && left[2] === right[2] && left[3] === right[3];
   }
 
@@ -83,5 +96,37 @@ export const Geometry = (() => {
   function boxToRect(box: IBox): IRect {
     const [left, top, right, bottom] = box;
     return [left, top, right - left, bottom - top];
+  }
+
+  function rectToSize(rect: IRect): ISize {
+    const [, , width, height] = rect;
+    return [width, height];
+  }
+
+  function sizeToRect(size: ISize): IRect {
+    const [width, height] = size;
+    return [0, 0, width, height];
+  }
+
+  function scaleSize(size: ISize, scale: number): ISize {
+    return [size[0] * scale, size[1] * scale];
+  }
+
+  function domRectToSize(rect: DOMRect): ISize {
+    return [rect.width, rect.height];
+  }
+
+  function sizesEqual(left: ISize | null, right: ISize | null): boolean {
+    if (left === null || right === null) {
+      return left === right;
+    }
+    if (left === right) {
+      return true;
+    }
+    return left[0] === right[0] && left[1] === right[1];
+  }
+
+  function roundSize(size: ISize): ISize {
+    return [Math.round(size[0]), Math.round(size[1])];
   }
 })();
