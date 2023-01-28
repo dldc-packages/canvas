@@ -24,6 +24,7 @@ export interface IView {
   update(): boolean;
   // reset transform and scale pixelRatio
   prepare(): void;
+  destroy(): void;
 }
 
 export const View = (() => {
@@ -66,7 +67,12 @@ export const View = (() => {
 
       update,
       prepare,
+      destroy,
     };
+
+    function destroy() {
+      target.removeChild(canvas);
+    }
 
     function update(): boolean {
       const nextElemSize = Geometry.Size.fromDomRect(target.getBoundingClientRect());

@@ -3,6 +3,7 @@ import { IEventAny, IPointer } from './Layer';
 export interface IEventManager {
   getPointers(): ReadonlyArray<IPointer>;
   flushEvents(): ReadonlyArray<IEventAny>;
+  destroy(): void;
 }
 
 export const EventManager = (() => {
@@ -17,7 +18,19 @@ export const EventManager = (() => {
     return {
       getPointers,
       flushEvents,
+      destroy,
     };
+
+    function destroy() {
+      const htmlEl = el as HTMLElement;
+      htmlEl.removeEventListener('pointerenter', handlePointerEnter);
+      htmlEl.removeEventListener('pointerdown', handlePointerDown);
+      htmlEl.removeEventListener('pointerup', handlePointerUp);
+      htmlEl.removeEventListener('pointermove', handlePointerMove);
+      htmlEl.removeEventListener('pointercancel', handlePointerCancel);
+      htmlEl.removeEventListener('pointerleave', handlePointerLeave);
+      htmlEl.removeEventListener('wheel', handleWheel);
+    }
 
     function getPointers() {
       return pointers;

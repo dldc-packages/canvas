@@ -8,6 +8,8 @@ export interface IRenderer<RootLayer extends ILayer> {
   readonly layer: RootLayer;
   readonly scheduler: IScreduler;
   readonly view: IView;
+
+  destroy(): void;
 }
 
 export interface RendererOptions<RootLayer extends ILayer> {
@@ -43,7 +45,14 @@ export const Renderer = (() => {
       scheduler.start();
     }
 
-    return { layer: rootLayer, scheduler, view };
+    return { layer: rootLayer, scheduler, view, destroy };
+
+    function destroy() {
+      scheduler.stop();
+      rootLayerLifecycles.cleanup?.();
+      view.destroy();
+      eventManager.destroy();
+    }
 
     function onFrame(t: number) {
       rootLayerLifecycles.pointers?.(eventManager.getPointers());

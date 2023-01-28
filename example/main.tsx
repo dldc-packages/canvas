@@ -69,7 +69,6 @@ function Rect(color: string): ILayer {
       return Layer.merge(hit, {
         cleanup() {
           clearInterval(timer);
-          // hitItem.cleanup();
         },
         update({ view, t }) {
           x = xSeq.spring.position(t);
