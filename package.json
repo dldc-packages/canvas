@@ -25,7 +25,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "rimraf dist && tsup src/index.ts --format esm,cjs --dts",
+    "build": "rimraf dist && tsup src/mod.ts --format esm,cjs --dts",
     "codecov": "codecov",
     "example:start": "vite",
     "lint": "prettier . --check && eslint . && tsc --noEmit",
@@ -41,7 +41,6 @@
     "typescript": "4.3.4"
   },
   "dependencies": {
-    "@preact/signals-core": "^1.2.3",
     "miid": "^6.0.3",
     "suub": "^3.2.1"
   },
@@ -54,11 +53,11 @@
     "eslint": "^8.32.0",
     "eslint-config-prettier": "^8.6.0",
     "humpf": "^4.0.0-8",
-    "jest": "^29.4.0",
+    "jest": "^29.4.1",
     "np": "^7.6.3",
     "prettier": "^2.8.3",
     "ts-jest": "^29.0.5",
-    "tslib": "^2.4.1",
+    "tslib": "^2.5.0",
     "tsup": "^6.5.0",
     "typescript": "^4.9.4",
     "vite": "^4.0.4"
