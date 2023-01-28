@@ -4,7 +4,6 @@
     "target": "es5",
     "module": "ES2020",
     "lib": ["esnext", "DOM"],
-    "types": [],
     "importHelpers": true,
     "declaration": true,
     "sourceMap": true,
