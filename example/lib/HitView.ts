@@ -1,6 +1,3 @@
-import { IRect } from './Geometry';
-import { Random } from './Random';
-
 export type Unregister = () => void;
 
 export interface HitObject<T> {
@@ -9,13 +6,11 @@ export interface HitObject<T> {
   color: string;
 }
 
-type Draw = (t: number, rect: IRect) => void;
-
-export type HitFn = (draw: Draw, time: number, x: number, y: number) => string | null;
-
 export interface IHitView {
-  readonly hit: HitFn;
-  getNextColor(): string;
+  readonly canvas: HTMLCanvasElement;
+  readonly context: CanvasRenderingContext2D;
+  prepare(x: number, y: number): void;
+  getHitColor(): string | null;
 }
 
 export const HitView = (() => {
@@ -24,22 +19,26 @@ export const HitView = (() => {
   function create(): IHitView {
     const canvas = document.createElement('canvas');
     Object.assign(canvas, { width: 1, height: 1 });
-    const context = canvas.getContext('2d')!;
-    const getNextColor = Random.sequenceOfUniqueColor();
+    const context = canvas.getContext('2d', { willReadFrequently: true })!;
 
-    return { hit, getNextColor };
+    return { canvas, context, prepare, getHitColor };
 
-    function hit(draw: Draw, time: number, x: number, y: number): string | null {
+    function prepare(x: number, y: number): void {
       context.resetTransform();
       context.clearRect(0, 0, 1, 1);
+      context.scale(window.devicePixelRatio, window.devicePixelRatio);
       context.translate(-x, -y);
-      draw(time, [x, y, 1, 1]);
+      context.fillStyle = '#000000';
+      context.strokeStyle = '#000000';
+    }
+
+    function getHitColor(): string | null {
       const res = context.getImageData(0, 0, 1, 1);
       const r = res.data[0];
       const g = res.data[1];
       const b = res.data[2];
-      const o = res.data[3];
-      const color = o === 0 ? null : '#' + ('000000' + ((r << 16) | (g << 8) | b).toString(16)).slice(-6);
+      const a = res.data[3];
+      const color = a === 0 ? null : '#' + ('000000' + ((r << 16) | (g << 8) | b).toString(16)).slice(-6);
       return color;
     }
   }

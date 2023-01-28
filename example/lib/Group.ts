@@ -1,6 +1,4 @@
-import { DraawWheelEvent, PointerActiveEvent, PointerHoverEvent } from '../../src/EventsManager';
-import { IRect } from './Geometry';
-import { DrawParams, ILayer, ILayerLifecycles, Layer, UpdateParams } from './Layer';
+import { ILayer, ILayerLifecycles, Layer } from './Layer';
 import { List } from './List';
 import { Tools } from './Tools';
 
@@ -23,6 +21,8 @@ export const Group = (() => {
     const mountedChildren = new WeakMap<Child, ILayerLifecycles>();
     let mounted: Tools | null = null;
 
+    let mergedLifecycles: ILayerLifecycles = {};
+
     const layerGroup: IGroup<Child> = {
       ref: Layer.createRef(mount),
       children: children.raw,
@@ -41,70 +41,20 @@ export const Group = (() => {
       children.forEachSafe((child) => {
         mountChild(child, tools);
       });
+      updateMergeLifecycles();
 
       return {
-        update,
-        draw,
-        cleanup,
-        hit,
-        onActivePointer,
-        onPointerHover,
-        onWheel,
+        pointers: (pointers) => mergedLifecycles.pointers?.(pointers) ?? pointers,
+        event: (event) => mergedLifecycles.event?.(event) ?? false,
+
+        update: (params) => mergedLifecycles.update?.(params) ?? null,
+        draw: (params) => mergedLifecycles.draw?.(params),
+        cleanup: () => mergedLifecycles.cleanup?.(),
       };
+    }
 
-      function onActivePointer(event: PointerActiveEvent) {
-        children.forEachSafe((child) => {
-          const lifecycles = mountedChildren.get(child);
-          lifecycles?.onActivePointer?.(event);
-        });
-      }
-
-      function onPointerHover(event: PointerHoverEvent) {
-        children.forEachSafe((child) => {
-          const lifecycles = mountedChildren.get(child);
-          lifecycles?.onPointerHover?.(event);
-        });
-      }
-
-      function onWheel(event: DraawWheelEvent) {
-        children.forEachSafe((child) => {
-          const lifecycles = mountedChildren.get(child);
-          lifecycles?.onWheel?.(event);
-        });
-      }
-
-      function hit(params: DrawParams) {
-        children.forEachSafe((child) => {
-          const lifecycles = mountedChildren.get(child);
-          lifecycles?.hit?.(params);
-        });
-      }
-
-      function cleanup() {
-        mounted = null;
-        children.forEachSafe((child) => {
-          unmountChild(child);
-        });
-      }
-
-      function update(params: UpdateParams): null | Array<IRect> {
-        return children
-          .mapSafe((child): Array<IRect> => {
-            const lifecycles = mountedChildren.get(child);
-            if (lifecycles) {
-              return lifecycles.update?.(params) ?? [];
-            }
-            return [];
-          })
-          .flat();
-      }
-
-      function draw(params: DrawParams): void {
-        children.forEachSafe((child) => {
-          const lifecycles = mountedChildren.get(child);
-          lifecycles?.draw?.(params);
-        });
-      }
+    function updateMergeLifecycles() {
+      mergedLifecycles = Layer.merge(...children.mapSafe((child) => mountedChildren.get(child) ?? {}));
     }
 
     function mountChild(child: Child, tools: Tools) {
@@ -127,6 +77,7 @@ export const Group = (() => {
       if (mounted) {
         mountChild(child, mounted);
       }
+      updateMergeLifecycles();
     }
 
     function removeChild(child: Child) {
@@ -135,6 +86,7 @@ export const Group = (() => {
         if (mounted) {
           unmountChild(child);
         }
+        updateMergeLifecycles();
       }
     }
 

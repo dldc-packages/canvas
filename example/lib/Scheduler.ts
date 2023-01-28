@@ -1,34 +1,24 @@
 export interface IScreduler {
-  getTime(): number;
+  time(): number;
   start(): void;
   stop(): void;
-}
-
-export interface ScredulerOptions {
-  onFrame?: (t: number) => void;
-  // start the animation loop (default: true)
-  autoStart?: boolean;
 }
 
 export const Screduler = (() => {
   return { create };
 
-  function create({ autoStart, onFrame }: ScredulerOptions = {}): IScreduler {
+  function create(onFrame: (t: number) => void): IScreduler {
     let startTime = performance.now();
     let currentTime = startTime;
     let requestedFrameId: number | null = null;
 
-    if (autoStart) {
-      start();
-    }
-
     return {
-      getTime,
+      time,
       start,
       stop,
     };
 
-    function getTime() {
+    function time() {
       return currentTime;
     }
 
