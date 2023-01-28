@@ -14,9 +14,15 @@
   "license": "MIT",
   "author": "Etienne Dldc <e.deladonchamps@gmail.com>",
   "sideEffects": false,
-  "main": "dist/index.js",
-  "module": "dist/draaw.esm.js",
-  "typings": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/mod.mjs",
+      "require": "./dist/mod.js"
+    }
+  },
+  "main": "./dist/mod.js",
+  "module": "./dist/mod.mjs",
+  "types": "./dist/mod.d.ts",
   "directories": {
     "example": "example",
     "test": "tests"
@@ -67,9 +73,5 @@
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org"
-  },
-  "np": {
-    "yarn": true,
-    "cleanup": false
   }
 }

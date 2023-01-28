@@ -3,7 +3,7 @@
   "compilerOptions": {
     "target": "es5",
     "module": "ES2020",
-    "lib": ["esnext", "DOM"],
+    "lib": ["DOM", "ESNext", "DOM.Iterable"],
     "importHelpers": true,
     "declaration": true,
     "sourceMap": true,
