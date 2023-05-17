@@ -25,6 +25,8 @@ const renderer = Renderer.create({
   }),
 });
 
+console.log(renderer);
+
 function Clear(): ILayer {
   return {
     ref: Layer.createRef((): ILayerLifecycles => {
@@ -39,7 +41,7 @@ function Clear(): ILayer {
 
 function Rect(color: string): ILayer {
   return {
-    ref: Layer.createRef((): ILayerLifecycles => {
+    ref: Layer.createRef((tools): ILayerLifecycles => {
       const xSeq = SpringSequence.create({
         initial: { position: Math.random() * 1000, equilibrium: Math.random() * 1000 },
         defaultConfig: { positionPrecision: 0.1, velocityPrecision: 0.01 },
@@ -47,8 +49,8 @@ function Rect(color: string): ILayer {
       const y = Math.random() * 600;
 
       const timer = setInterval(() => {
-        xSeq.insertAt(renderer.scheduler.time(), { equilibrium: Math.random() * 1000 });
-      }, 4000);
+        xSeq.insertAt(tools.time(), { equilibrium: Math.random() * 1000 });
+      }, 2000 + 2000 * Math.random());
 
       const isHovered = Variable.create(false);
 
