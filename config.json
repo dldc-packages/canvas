@@ -1,5 +1,4 @@
 {
-  "browser": true,
   "additionalDevDependencies": {
     "@types/node": "^20.3.2"
   }
