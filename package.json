@@ -1,15 +1,15 @@
 {
-  "name": "draaw",
+  "name": "@dldc/canvas",
   "version": "1.1.1",
   "description": "A 2D Canvas engine",
   "keywords": [],
-  "homepage": "https://github.com/etienne-dldc/draaw#readme",
+  "homepage": "https://github.com/dldc-packages/canvas#readme",
   "bugs": {
-    "url": "https://github.com/etienne-dldc/draaw/issues"
+    "url": "https://github.com/dldc-packages/canvas/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/etienne-dldc/draaw.git"
+    "url": "git+https://github.com/dldc-packages/canvas.git"
   },
   "license": "MIT",
   "author": "Etienne Dldc <e.deladonchamps@gmail.com>",
