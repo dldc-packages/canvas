@@ -39,8 +39,8 @@
     "typecheck:watch": "tsc --watch"
   },
   "dependencies": {
-    "miid": "^6.0.3",
-    "suub": "^3.2.1"
+    "@dldc/pubsub": "^5.1.3",
+    "@dldc/stack": "^3.0.4"
   },
   "devDependencies": {
     "@types/node": "^20.3.2",

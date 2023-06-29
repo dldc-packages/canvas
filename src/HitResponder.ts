@@ -1,4 +1,4 @@
-import { SubscribeMethod, Subscription } from 'suub';
+import { SubscribeMethod, Suub } from '@dldc/pubsub';
 import { IRect } from './Geometry';
 import { HitView } from './HitView';
 import { Handled, IEvent, IEventAny, ILayerLifecycles, IPointers } from './Layer';
@@ -25,9 +25,9 @@ export const HitResponder = (() => {
 
     let draw: HitDraw | null = null;
 
-    const pointerMoveSub = Subscription<IEvent<'PointerMove'>>();
-    const pointerEnterSub = Subscription<IEvent<'PointerEnter'>>();
-    const pointerLeaveSub = Subscription<IEvent<'PointerLeave'>>();
+    const pointerMoveSub = Suub.createSubscription<IEvent<'PointerMove'>>();
+    const pointerEnterSub = Suub.createSubscription<IEvent<'PointerEnter'>>();
+    const pointerLeaveSub = Suub.createSubscription<IEvent<'PointerLeave'>>();
 
     return {
       event,
