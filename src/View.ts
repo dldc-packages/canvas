@@ -107,7 +107,7 @@ export const View = (() => {
       if (!VALID_POSITIONS.includes(elemStyles.position)) {
         throw new Error(
           `Element should have one of the following position ${VALID_POSITIONS.join(', ')} ! ` +
-            `It currently has ${elemStyles.position}`
+            `It currently has ${elemStyles.position}`,
         );
       }
     }
