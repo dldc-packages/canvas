@@ -1,5 +1,6 @@
 {
+  "viteExample": true,
   "additionalDevDependencies": {
-    "@types/node": "^20.3.2"
+    "@dldc/humpf": "^4.0.1"
   }
 }

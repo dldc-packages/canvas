@@ -1,6 +1,6 @@
 {
   "$schema": "https://json.schemastore.org/tsconfig",
-  "include": ["src", "tests"],
+  "include": ["src", "tests", "example"],
   "compilerOptions": {
     "rootDir": ".",
     "outDir": "dist",

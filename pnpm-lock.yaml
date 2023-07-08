@@ -6,16 +6,19 @@ settings:
 
 dependencies:
   '@dldc/pubsub':
-    specifier: ^5.1.3
-    version: 5.1.3
+    specifier: ^5.2.0
+    version: 5.2.0
   '@dldc/stack':
     specifier: ^3.0.4
     version: 3.0.4
 
 devDependencies:
+  '@dldc/humpf':
+    specifier: ^4.0.1
+    version: 4.0.1
   '@types/node':
-    specifier: ^20.3.2
-    version: 20.3.2
+    specifier: ^20.4.0
+    version: 20.4.0
   '@typescript-eslint/eslint-plugin':
     specifier: ^5.61.0
     version: 5.61.0(@typescript-eslint/parser@5.61.0)(eslint@8.44.0)(typescript@5.1.6)
@@ -46,6 +49,9 @@ devDependencies:
   typescript:
     specifier: ^5.1.6
     version: 5.1.6
+  vite:
+    specifier: ^4.3.9
+    version: 4.4.2(@types/node@20.4.0)
   vitest:
     specifier: ^0.33.0
     version: 0.33.0
@@ -90,15 +96,25 @@ packages:
     resolution: {integrity: sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==}
     dev: true
 
-  /@dldc/pubsub@5.1.3:
-    resolution: {integrity: sha512-OgMdxY/KONHCROx7ur9CZWfC+xE3qbsuWjCfOA8XFM7wnQhllEUlmOHvLdBXYeY5AHG/dmIqkq4/Hk7TaaKP1w==}
+  /@dldc/erreur@3.0.6:
+    resolution: {integrity: sha512-Kp8K6roiCkqBRvW46UiQcX8yTRiNAqrKpZUILTB7WPdyKUkqkrVZB47aAA17iy/vZCQ5cF9NeiVBOvSFTBOyKQ==}
     dependencies:
-      erreur: 2.1.0
+      '@dldc/stack': 3.0.4
+
+  /@dldc/humpf@4.0.1:
+    resolution: {integrity: sha512-O62fuHCghUM9QoPX98C9+Jm2zPbobfEx0U+U+vFUxU9dR111uIIC7hZyDRtNfd9EqsxbaTK1xjMOdFsZpbxwyg==}
+    dependencies:
+      '@dldc/erreur': 3.0.6
+    dev: true
+
+  /@dldc/pubsub@5.2.0:
+    resolution: {integrity: sha512-jQcoeLoOLIuArQbPfFvoD/5RnYq2u4sMZ49k15Avlyzq8SxRf5txOJT9QjU0BPL7nTRkCR7Cwa+mtXffPnJbUA==}
+    dependencies:
+      '@dldc/erreur': 3.0.6
     dev: false
 
   /@dldc/stack@3.0.4:
     resolution: {integrity: sha512-v3CRaq0yGqT6l0kvuCCAulimOQetn6UAXtJ211+ZhZPIUK+224QEKnVvIo2Hg5DXfotv4SjJG7AI7KlUq67zEg==}
-    dev: false
 
   /@esbuild/android-arm64@0.18.11:
     resolution: {integrity: sha512-snieiq75Z1z5LJX9cduSAjUr7vEI1OdlzFPMw0HH5YI7qQHDd3qs+WZoMrWYDsfRJSq36lIA6mfZBkvL46KoIw==}
@@ -628,8 +644,8 @@ packages:
     resolution: {integrity: sha512-Hr5Jfhc9eYOQNPYO5WLDq/n4jqijdHNlDXjuAQkkt+mWdQR+XJToOHrsD4cPaMXpn6KO7y2+wM8AZEs8VpBLVA==}
     dev: true
 
-  /@types/node@20.3.2:
-    resolution: {integrity: sha512-vOBLVQeCQfIcF/2Y7eKFTqrMnizK5lRNQ7ykML/5RuwVXVWxYkgwS7xbt4B6fKCUPgbSL5FSsjHQpaGQP/dQmw==}
+  /@types/node@20.4.0:
+    resolution: {integrity: sha512-jfT7iTf/4kOQ9S7CHV9BIyRaQqHu67mOjsIQBC3BKZvzvUB6zLxEwJ6sBE3ozcvP8kF6Uk5PXN0Q+c0dfhGX0g==}
     dev: true
 
   /@types/semver@7.5.0:
@@ -1438,11 +1454,6 @@ packages:
   /emoji-regex@9.2.2:
     resolution: {integrity: sha512-L18DaJsXSUk2+42pv8mLs5jJT2hqFkFE4j21wOmgbUqsZ2hL72NsUU785g9RXgo3s0ZNgVl42TiHp3ZtOv/Vyg==}
     dev: true
-
-  /erreur@2.1.0:
-    resolution: {integrity: sha512-hll3F0nzc1MyWgwYMt5nnEz8tP5nX+bH1uoZa2RGJs2/cCHrviYrp05Tce2owwCsGp+BqMfV1y75rLDelGE9SA==}
-    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
-    dev: false
 
   /error-ex@1.3.2:
     resolution: {integrity: sha512-7dFHNmqeFSEt2ZBsCriorKnn3Z2pj+fd9kmI6QoWw4//DL+icEBfc0U7qJCisqrTsKTjw4fNFy2pW9OqStD84g==}
@@ -4106,7 +4117,7 @@ packages:
       convert-source-map: 1.9.0
     dev: true
 
-  /vite-node@0.33.0(@types/node@20.3.2):
+  /vite-node@0.33.0(@types/node@20.4.0):
     resolution: {integrity: sha512-19FpHYbwWWxDr73ruNahC+vtEdza52kA90Qb3La98yZ0xULqV8A5JLNPUff0f5zID4984tW7l3DH2przTJUZSw==}
     engines: {node: '>=v14.18.0'}
     hasBin: true
@@ -4116,7 +4127,7 @@ packages:
       mlly: 1.4.0
       pathe: 1.1.1
       picocolors: 1.0.0
-      vite: 4.4.2(@types/node@20.3.2)
+      vite: 4.4.2(@types/node@20.4.0)
     transitivePeerDependencies:
       - '@types/node'
       - less
@@ -4128,7 +4139,7 @@ packages:
       - terser
     dev: true
 
-  /vite@4.4.2(@types/node@20.3.2):
+  /vite@4.4.2(@types/node@20.4.0):
     resolution: {integrity: sha512-zUcsJN+UvdSyHhYa277UHhiJ3iq4hUBwHavOpsNUGsTgjBeoBlK8eDt+iT09pBq0h9/knhG/SPrZiM7cGmg7NA==}
     engines: {node: ^14.18.0 || >=16.0.0}
     hasBin: true
@@ -4156,7 +4167,7 @@ packages:
       terser:
         optional: true
     dependencies:
-      '@types/node': 20.3.2
+      '@types/node': 20.4.0
       esbuild: 0.18.11
       postcss: 8.4.25
       rollup: 3.26.2
@@ -4197,7 +4208,7 @@ packages:
     dependencies:
       '@types/chai': 4.3.5
       '@types/chai-subset': 1.3.3
-      '@types/node': 20.3.2
+      '@types/node': 20.4.0
       '@vitest/expect': 0.33.0
       '@vitest/runner': 0.33.0
       '@vitest/snapshot': 0.33.0
@@ -4216,8 +4227,8 @@ packages:
       strip-literal: 1.0.1
       tinybench: 2.5.0
       tinypool: 0.6.0
-      vite: 4.4.2(@types/node@20.3.2)
-      vite-node: 0.33.0(@types/node@20.3.2)
+      vite: 4.4.2(@types/node@20.4.0)
+      vite-node: 0.33.0(@types/node@20.4.0)
       why-is-node-running: 2.2.2
     transitivePeerDependencies:
       - less
