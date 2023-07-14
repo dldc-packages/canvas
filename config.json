@@ -1,6 +1,6 @@
 {
   "viteExample": true,
   "additionalDevDependencies": {
-    "@dldc/humpf": "^4.0.1"
+    "@dldc/humpf": "^4.0.2"
   }
 }

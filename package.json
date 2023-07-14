@@ -41,11 +41,11 @@
     "typecheck:watch": "tsc --watch"
   },
   "dependencies": {
-    "@dldc/pubsub": "^5.2.1",
-    "@dldc/stack": "^3.1.0"
+    "@dldc/pubsub": "^5.2.2",
+    "@dldc/stack": "^3.1.4"
   },
   "devDependencies": {
-    "@dldc/humpf": "^4.0.1",
+    "@dldc/humpf": "^4.0.2",
     "@types/node": "^20.4.2",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
