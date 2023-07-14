@@ -1,7 +1,7 @@
-export type ReleasePointer = () => void;
+export type TReleasePointer = () => void;
 
 export interface IPointerCaptureManager<Target> {
-  capturePointer(target: Target, pointerId: number): ReleasePointer;
+  capturePointer(target: Target, pointerId: number): TReleasePointer;
   hasCapture(pointerId: number): boolean;
   getCapture(pointerId: number): Target | undefined;
 }
@@ -18,7 +18,7 @@ export const PointerCaptureManager = (() => {
       hasCapture,
     };
 
-    function capturePointer(target: Target, pointerId: number): ReleasePointer {
+    function capturePointer(target: Target, pointerId: number): TReleasePointer {
       if (captures.has(pointerId)) {
         throw new Error(`Pointer ${pointerId} already captured`);
       }

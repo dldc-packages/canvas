@@ -2,14 +2,17 @@ import type { SubscribeMethod } from '@dldc/pubsub';
 import { Suub } from '@dldc/pubsub';
 import type { IRect } from './Geometry';
 import { HitView } from './HitView';
-import type { Handled, IEvent, IEventAny, ILayerLifecycles, IPointers } from './Layer';
+import type { IEvent, IEventAny, ILayerLifecycles, IPointers, THandled } from './Layer';
 
-export type HitDrawParams = { ctx: CanvasRenderingContext2D; rect: IRect };
+export interface IHitDrawParams {
+  ctx: CanvasRenderingContext2D;
+  rect: IRect;
+}
 
-export type HitDraw = (params: HitDrawParams) => void;
+export type THitDraw = (params: IHitDrawParams) => void;
 
 export interface IHitResponder extends ILayerLifecycles {
-  setDraw(draw: HitDraw): void;
+  setDraw(draw: THitDraw): void;
   onPointerMove: SubscribeMethod<IEvent<'PointerMove'>>;
   onPointerEnter: SubscribeMethod<IEvent<'PointerEnter'>>;
   onPointerLeave: SubscribeMethod<IEvent<'PointerLeave'>>;
@@ -24,7 +27,7 @@ export const HitResponder = (() => {
 
     const pointerHit = new Map<number, boolean>();
 
-    let draw: HitDraw | null = null;
+    let draw: THitDraw | null = null;
 
     const pointerMoveSub = Suub.createSubscription<IEvent<'PointerMove'>>();
     const pointerEnterSub = Suub.createSubscription<IEvent<'PointerEnter'>>();
@@ -71,7 +74,7 @@ export const HitResponder = (() => {
       return nextPointers;
     }
 
-    function event(_event: IEventAny): Handled {
+    function event(_event: IEventAny): THandled {
       return false;
       // if (!draw) {
       //   return;
@@ -84,11 +87,11 @@ export const HitResponder = (() => {
       // }
     }
 
-    function setDraw(drawFn: HitDraw) {
+    function setDraw(drawFn: THitDraw) {
       draw = drawFn;
     }
 
-    function hitTest(draw: HitDraw, x: number, y: number): string | null {
+    function hitTest(draw: THitDraw, x: number, y: number): string | null {
       hitView.prepare(x, y);
       draw({ ctx: hitView.context, rect: hitRect });
       return hitView.getHitColor();

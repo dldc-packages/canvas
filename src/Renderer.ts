@@ -15,7 +15,7 @@ export interface IRenderer<RootLayer extends ILayer> {
   destroy(): void;
 }
 
-export interface RendererOptions<RootLayer extends ILayer> {
+export interface IRendererOptions<RootLayer extends ILayer> {
   layer: RootLayer;
   // Debug name
   name?: string;
@@ -36,7 +36,7 @@ export const Renderer = (() => {
     name,
     layer,
     autoStart = true,
-  }: RendererOptions<RootLayer>): IRenderer<RootLayer> {
+  }: IRendererOptions<RootLayer>): IRenderer<RootLayer> {
     const view = View({ target, name });
     const scheduler = Screduler.create(onFrame);
     const tools = Tools.create(view.context, scheduler);

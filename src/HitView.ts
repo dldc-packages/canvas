@@ -1,7 +1,7 @@
-export type Unregister = () => void;
+export type TUnregister = () => void;
 
-export interface HitObject<T> {
-  register(value: T): Unregister;
+export interface IHitObject<T> {
+  register(value: T): TUnregister;
   responders: Set<T>;
   color: string;
 }

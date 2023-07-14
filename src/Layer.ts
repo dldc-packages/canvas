@@ -8,13 +8,21 @@ export interface ILayer {
 const INTERNAL = Symbol.for('DRAAW_INTERNAL');
 
 // Update should return an array of rects that need to be redrawn
-export type UpdateParams = { t: number; view: IRect };
-export type UpdateLifecycle = (params: UpdateParams) => null | Array<IRect>;
+export interface IUpdateParams {
+  t: number;
+  view: IRect;
+}
+export type TUpdateLifecycle = (params: IUpdateParams) => null | Array<IRect>;
 
-export type DrawParams = { t: number; view: IRect; rect: IRect; ctx: CanvasRenderingContext2D };
-export type DrawLifecycle = (params: DrawParams) => void;
+export interface IDrawParams {
+  t: number;
+  view: IRect;
+  rect: IRect;
+  ctx: CanvasRenderingContext2D;
+}
+export type TDrawLifecycle = (params: IDrawParams) => void;
 
-export type CleanupLifecycle = () => void;
+export type TCleanupLifecycle = () => void;
 
 export interface IPointer {
   pointerId: number;
@@ -40,20 +48,20 @@ export type IEvent<EventName extends IEventName = IEventName> = Extract<IEventAn
 
 // When an event or pointer is handled, it should return true
 // This is used in merged to stop propagation to sibling layers
-export type Handled = boolean;
+export type THandled = boolean;
 
-export type EventLifecycle = (event: IEventAny) => Handled;
+export type TEventLifecycle = (event: IEventAny) => THandled;
 
-export type PointersLifecycle = (pointers: IPointers) => IPointers;
+export type TPointersLifecycle = (pointers: IPointers) => IPointers;
 
 export interface ILayerLifecyclesMutable {
-  pointers?: PointersLifecycle;
-  event?: EventLifecycle;
+  pointers?: TPointersLifecycle;
+  event?: TEventLifecycle;
 
-  update?: UpdateLifecycle;
-  draw?: DrawLifecycle;
+  update?: TUpdateLifecycle;
+  draw?: TDrawLifecycle;
 
-  cleanup?: CleanupLifecycle;
+  cleanup?: TCleanupLifecycle;
 }
 
 export type ILayerLifecycles = Readonly<ILayerLifecyclesMutable>;

@@ -10,14 +10,14 @@ export interface IGroup<Child extends ILayer> extends ILayer {
   hasChild(child: Child): boolean;
 }
 
-export interface GroupOptions<Child extends ILayer> {
+export interface IGroupOptions<Child extends ILayer> {
   children?: ReadonlyArray<Child>;
 }
 
 export const Group = (() => {
   return { create };
 
-  function create<Child extends ILayer>({ children: initialChildren }: GroupOptions<Child> = {}): IGroup<Child> {
+  function create<Child extends ILayer>({ children: initialChildren }: IGroupOptions<Child> = {}): IGroup<Child> {
     const children = List.create<Child>(initialChildren ?? []);
     const mountedChildren = new WeakMap<Child, ILayerLifecycles>();
     let mounted: Tools | null = null;
