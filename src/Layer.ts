@@ -1,5 +1,5 @@
-import { IRect } from './Geometry';
-import { Tools } from './Tools';
+import type { IRect } from './Geometry';
+import type { Tools } from './Tools';
 
 export interface ILayer {
   readonly ref: ILayerRef;

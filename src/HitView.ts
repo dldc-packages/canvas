@@ -20,7 +20,7 @@ export const HitView = (() => {
     const canvas = document.createElement('canvas');
     Object.assign(canvas, { width: 1, height: 1 });
     // need to cast to CanvasRenderingContext2D because DTS fails to build types otherwise
-    const context = canvas.getContext('2d', { willReadFrequently: true })! as CanvasRenderingContext2D;
+    const context = canvas.getContext('2d', { willReadFrequently: true })!;
 
     return { canvas, context, prepare, getHitColor };
 

@@ -1,7 +1,8 @@
-import { SubscribeMethod, Suub } from '@dldc/pubsub';
-import { IRect } from './Geometry';
+import type { SubscribeMethod } from '@dldc/pubsub';
+import { Suub } from '@dldc/pubsub';
+import type { IRect } from './Geometry';
 import { HitView } from './HitView';
-import { Handled, IEvent, IEventAny, ILayerLifecycles, IPointers } from './Layer';
+import type { Handled, IEvent, IEventAny, ILayerLifecycles, IPointers } from './Layer';
 
 export type HitDrawParams = { ctx: CanvasRenderingContext2D; rect: IRect };
 

@@ -1,4 +1,5 @@
-import { Geometry, IRect, ISize } from './Geometry';
+import type { IRect, ISize } from './Geometry';
+import { Geometry } from './Geometry';
 
 interface Options {
   name?: string;

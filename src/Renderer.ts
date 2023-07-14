@@ -1,8 +1,11 @@
 import { EventManager } from './EventManager';
-import { ILayer, Layer } from './Layer';
-import { IScreduler, Screduler } from './Scheduler';
+import type { ILayer } from './Layer';
+import { Layer } from './Layer';
+import type { IScreduler } from './Scheduler';
+import { Screduler } from './Scheduler';
 import { Tools } from './Tools';
-import { IView, View } from './View';
+import type { IView } from './View';
+import { View } from './View';
 
 export interface IRenderer<RootLayer extends ILayer> {
   readonly layer: RootLayer;

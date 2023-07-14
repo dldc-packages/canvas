@@ -1,4 +1,4 @@
-import { IEventAny, IPointer } from './Layer';
+import type { IEventAny, IPointer } from './Layer';
 
 export interface IEventManager {
   getPointers(): ReadonlyArray<IPointer>;

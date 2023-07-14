@@ -1,6 +1,7 @@
-import { ILayer, ILayerLifecycles, Layer } from './Layer';
+import type { ILayer, ILayerLifecycles } from './Layer';
+import { Layer } from './Layer';
 import { List } from './List';
-import { Tools } from './Tools';
+import type { Tools } from './Tools';
 
 export interface IGroup<Child extends ILayer> extends ILayer {
   readonly children: ReadonlyArray<Child>;

@@ -1,6 +1,6 @@
 {
   "$schema": "https://json.schemastore.org/tsconfig",
-  "include": ["src", "tests", "example"],
+  "include": ["src", "tests", "vitest.config.ts", "example", "vite.config.ts"],
   "compilerOptions": {
     "rootDir": ".",
     "outDir": "dist",
