@@ -6,11 +6,11 @@ settings:
 
 dependencies:
   '@dldc/pubsub':
-    specifier: ^5.2.0
-    version: 5.2.0
+    specifier: ^5.2.1
+    version: 5.2.1
   '@dldc/stack':
-    specifier: ^3.0.4
-    version: 3.0.4
+    specifier: ^3.1.0
+    version: 3.1.0
 
 devDependencies:
   '@dldc/humpf':
@@ -53,8 +53,8 @@ devDependencies:
     specifier: ^5.1.6
     version: 5.1.6
   vite:
-    specifier: ^4.3.9
-    version: 4.4.2(@types/node@20.4.1)
+    specifier: ^4.4.4
+    version: 4.4.4(@types/node@20.4.1)
   vitest:
     specifier: ^0.33.0
     version: 0.33.0
@@ -102,7 +102,14 @@ packages:
   /@dldc/erreur@3.0.6:
     resolution: {integrity: sha512-Kp8K6roiCkqBRvW46UiQcX8yTRiNAqrKpZUILTB7WPdyKUkqkrVZB47aAA17iy/vZCQ5cF9NeiVBOvSFTBOyKQ==}
     dependencies:
-      '@dldc/stack': 3.0.4
+      '@dldc/stack': 3.1.0
+    dev: true
+
+  /@dldc/erreur@3.0.7:
+    resolution: {integrity: sha512-HV9e5/O80YleOjXA6D5Wog83Ar8yhwzM67PdhLF2LiB0jSKyMODIPOI+8H/qauYDqU/51zmVMryV9j/CLh3CMA==}
+    dependencies:
+      '@dldc/stack': 3.1.0
+    dev: false
 
   /@dldc/humpf@4.0.1:
     resolution: {integrity: sha512-O62fuHCghUM9QoPX98C9+Jm2zPbobfEx0U+U+vFUxU9dR111uIIC7hZyDRtNfd9EqsxbaTK1xjMOdFsZpbxwyg==}
@@ -110,14 +117,14 @@ packages:
       '@dldc/erreur': 3.0.6
     dev: true
 
-  /@dldc/pubsub@5.2.0:
-    resolution: {integrity: sha512-jQcoeLoOLIuArQbPfFvoD/5RnYq2u4sMZ49k15Avlyzq8SxRf5txOJT9QjU0BPL7nTRkCR7Cwa+mtXffPnJbUA==}
+  /@dldc/pubsub@5.2.1:
+    resolution: {integrity: sha512-oGnYQxmU8BVbu2aZlMm1iCVzAm+bXxcXgtz/mOh3OCQ8pCfZpBenAL5ARqmrVjq6VJMxiIlYdapKuF/Vg7Nnnw==}
     dependencies:
-      '@dldc/erreur': 3.0.6
+      '@dldc/erreur': 3.0.7
     dev: false
 
-  /@dldc/stack@3.0.4:
-    resolution: {integrity: sha512-v3CRaq0yGqT6l0kvuCCAulimOQetn6UAXtJ211+ZhZPIUK+224QEKnVvIo2Hg5DXfotv4SjJG7AI7KlUq67zEg==}
+  /@dldc/stack@3.1.0:
+    resolution: {integrity: sha512-br/OD1JEGeEmJNqaRZQ6cT+NGkR6sI0ECw7+KYl89nWIjmI0PazdjpUnof+gr7OEB0yV1FQTvvjVq29eNOfJ2w==}
 
   /@esbuild/android-arm64@0.18.11:
     resolution: {integrity: sha512-snieiq75Z1z5LJX9cduSAjUr7vEI1OdlzFPMw0HH5YI7qQHDd3qs+WZoMrWYDsfRJSq36lIA6mfZBkvL46KoIw==}
@@ -4180,7 +4187,7 @@ packages:
       mlly: 1.4.0
       pathe: 1.1.1
       picocolors: 1.0.0
-      vite: 4.4.2(@types/node@20.4.1)
+      vite: 4.4.4(@types/node@20.4.1)
     transitivePeerDependencies:
       - '@types/node'
       - less
@@ -4192,8 +4199,8 @@ packages:
       - terser
     dev: true
 
-  /vite@4.4.2(@types/node@20.4.1):
-    resolution: {integrity: sha512-zUcsJN+UvdSyHhYa277UHhiJ3iq4hUBwHavOpsNUGsTgjBeoBlK8eDt+iT09pBq0h9/knhG/SPrZiM7cGmg7NA==}
+  /vite@4.4.4(@types/node@20.4.1):
+    resolution: {integrity: sha512-4mvsTxjkveWrKDJI70QmelfVqTm+ihFAb6+xf4sjEU2TmUCTlVX87tmg/QooPEMQb/lM9qGHT99ebqPziEd3wg==}
     engines: {node: ^14.18.0 || >=16.0.0}
     hasBin: true
     peerDependencies:
@@ -4280,7 +4287,7 @@ packages:
       strip-literal: 1.0.1
       tinybench: 2.5.0
       tinypool: 0.6.0
-      vite: 4.4.2(@types/node@20.4.1)
+      vite: 4.4.4(@types/node@20.4.1)
       vite-node: 0.33.0(@types/node@20.4.1)
       why-is-node-running: 2.2.2
     transitivePeerDependencies:
