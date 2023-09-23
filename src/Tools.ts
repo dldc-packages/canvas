@@ -1,8 +1,8 @@
-import type { TStaackCoreValue } from '@dldc/stack';
-import { Key, Staack } from '@dldc/stack';
+import type { TStackCoreValue } from '@dldc/stack';
+import { Key, Stack } from '@dldc/stack';
 import type { IScreduler } from './Scheduler';
 
-export class Tools extends Staack {
+export class Tools extends Stack {
   static create(ctx: CanvasRenderingContext2D, scheduler: IScreduler): Tools {
     return new Tools().with(Tools.CtxKey.Provider(ctx), Tools.SchedulerKey.Provider(scheduler));
   }
@@ -18,7 +18,7 @@ export class Tools extends Staack {
     return this.getOrFail(Tools.SchedulerKey.Consumer).time();
   }
 
-  protected instantiate(staackCore: TStaackCoreValue): this {
-    return new Tools(staackCore) as any;
+  protected instantiate(stackCore: TStackCoreValue): this {
+    return new Tools(stackCore) as any;
   }
 }
