@@ -47,12 +47,6 @@
     "tabWidth": 2,
     "useTabs": false
   },
-  "dldc": {
-    "viteExample": true,
-    "additionalDevDependencies": {
-      "@dldc/humpf": "^4.0.3"
-    }
-  },
   "eslintConfig": {
     "parser": "@typescript-eslint/parser",
     "parserOptions": {
@@ -112,6 +106,12 @@
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org"
+  },
+  "dldc": {
+    "viteExample": true,
+    "additionalDevDependencies": [
+      "@dldc/humpf"
+    ]
   },
   "release-it": {
     "hooks": {
