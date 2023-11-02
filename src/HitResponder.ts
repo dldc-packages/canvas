@@ -1,5 +1,5 @@
 import type { SubscribeMethod } from '@dldc/pubsub';
-import { Suub } from '@dldc/pubsub';
+import { PubSub } from '@dldc/pubsub';
 import type { IRect } from './Geometry';
 import { HitView } from './HitView';
 import type { IEvent, IEventAny, ILayerLifecycles, IPointers, THandled } from './Layer';
@@ -29,9 +29,9 @@ export const HitResponder = (() => {
 
     let draw: THitDraw | null = null;
 
-    const pointerMoveSub = Suub.createSubscription<IEvent<'PointerMove'>>();
-    const pointerEnterSub = Suub.createSubscription<IEvent<'PointerEnter'>>();
-    const pointerLeaveSub = Suub.createSubscription<IEvent<'PointerLeave'>>();
+    const pointerMoveSub = PubSub.createSubscription<IEvent<'PointerMove'>>();
+    const pointerEnterSub = PubSub.createSubscription<IEvent<'PointerEnter'>>();
+    const pointerLeaveSub = PubSub.createSubscription<IEvent<'PointerLeave'>>();
 
     return {
       event,
