@@ -1,53 +1,79 @@
 import { SpringSequence } from '@dldc/humpf';
-import type { ILayer, ILayerLifecycles } from '../src/mod';
-import { Group, HitResponder, Layer, Renderer } from '../src/mod';
-import { Variable } from './Variable';
+import type { IHitResponder, ILayer } from '../src/mod';
+import { BoxLayer, Geometry, Group, HitResponder, Layer, PixelRatio, Renderer, Variable } from '../src/mod';
 
 const rootEl = document.getElementById('root')!;
-
 const target = document.createElement('div');
 Object.assign(target.style, { position: 'fixed', inset: '50px' });
 rootEl.appendChild(target);
 
 const renderer = Renderer.create({
   target,
-  layer: Group.create({
-    children: [
-      Clear(),
-      Rect('#000000'),
-      Rect('#222222'),
-      Rect('#444444'),
-      Rect('#666666'),
-      Rect('#888888'),
-      Rect('#aaaaaa'),
-      Rect('#cccccc'),
-      Rect('#eeeeee'),
-    ],
-  }),
+  layer: PixelRatio(
+    Group.create({
+      children: [
+        Clear(),
+        RenderArea(),
+        Rect('#000000'),
+        Rect('#222222'),
+        Rect('#444444'),
+        Rect('#666666'),
+        Rect('#888888'),
+        Rect('#aaaaaa'),
+        Rect('#cccccc'),
+        Rect('#eeeeee'),
+      ],
+    }),
+  ),
 });
 
 console.log(renderer);
 
+setTimeout(() => {
+  console.log(renderer.view.view);
+}, 5000);
+
 function Clear(): ILayer {
   return {
-    ref: Layer.createRef((): ILayerLifecycles => {
+    mount: () => {
       return {
         draw({ rect, ctx }) {
           ctx.clearRect(...rect);
         },
       };
-    }),
+    },
+  };
+}
+
+function RenderArea(): ILayer {
+  return {
+    mount: () => {
+      return {
+        draw({ ctx, view }) {
+          ctx.strokeStyle = 'red';
+          ctx.lineWidth = 2;
+          const [x, y, width, height] = Geometry.Rect.expand(view, -1);
+          ctx.strokeRect(x, y, width, height);
+        },
+      };
+    },
   };
 }
 
 function Rect(color: string): ILayer {
+  const hit = HitResponder.create();
+
+  const paintRect = PaintRect(hit, color);
+  const boxLayer = BoxLayer({ children: paintRect, width: 300, height: 300, x: 0, y: Math.random() * 600 });
+
   return {
-    ref: Layer.createRef((tools): ILayerLifecycles => {
+    mount: (tools) => {
+      const boxMounted = boxLayer.mount(tools);
+
       const xSeq = SpringSequence.create({
         initial: { position: Math.random() * 1000, equilibrium: Math.random() * 1000 },
         defaultConfig: { positionPrecision: 0.1, velocityPrecision: 0.01 },
       });
-      const y = Math.random() * 600;
 
       const timer = setInterval(
         () => {
@@ -56,41 +82,57 @@ function Rect(color: string): ILayer {
         2000 + 2000 * Math.random(),
       );
 
-      const isHovered = Variable.create(false);
-
-      const hit = HitResponder.create();
-
       hit.onPointerEnter(() => {
-        isHovered.value = true;
+        paintRect.color = 'blue';
       });
 
       hit.onPointerLeave(() => {
-        isHovered.value = false;
+        paintRect.color = color;
       });
 
-      const width = 300;
-      const height = 300;
-      let x = 0;
-
-      return Layer.merge(hit, {
+      return Layer.merge(hit, boxMounted, {
         cleanup() {
           clearInterval(timer);
         },
-        update({ view, t }) {
-          x = xSeq.spring.position(t);
-          if (xSeq.spring.stable(t) && !isHovered.commit()) {
-            return null;
-          }
-          return [view];
+        update({ t }) {
+          boxLayer.x = xSeq.spring.position(t);
+          return null;
         },
-        draw({ ctx }) {
+      });
+    },
+  };
+}
+
+interface IPaintRect extends ILayer {
+  color: string;
+}
+
+function PaintRect(hit: IHitResponder, color: string): IPaintRect {
+  const $color = Variable(color);
+
+  return {
+    get color() {
+      return $color.value;
+    },
+    set color(value: string) {
+      $color.value = value;
+    },
+
+    mount() {
+      return {
+        update({ view }) {
+          const colorChanged = $color.commit();
+          return colorChanged ? [view] : null;
+        },
+        draw: ({ ctx, view }) => {
           hit.setDraw(({ ctx }) => {
             ctx.fillRect(x, y, width, height);
           });
-          ctx.fillStyle = isHovered.value ? 'red' : color;
+          ctx.fillStyle = $color.value;
+          const [x, y, width, height] = view;
           ctx.fillRect(x, y, width, height);
         },
-      });
-    }),
+      };
+    },
   };
 }

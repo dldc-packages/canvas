@@ -1,5 +1,5 @@
-import type { IRect, ISize } from './Geometry';
-import { Geometry } from './Geometry';
+import type { IRect, ISize } from '../utils/Geometry';
+import { Geometry } from '../utils/Geometry';
 
 interface Options {
   name?: string;
@@ -11,11 +11,19 @@ const VALID_POSITIONS = ['relative', 'absolute', 'fixed', 'sticky'];
 /**
  * A visible canvas synced to the size of the target element
  */
-export interface IView {
-  // Canvas size and position in the page
+export interface IFrame {
+  /**
+   * Canvas size and position in the page
+   */
   readonly outerSize: ISize;
-  // Size inside the canvas at origin 0,0
+  /**
+   * View inside the canvas. Origin is always 0,0. Size is outerSize * pixelRatio
+   */
   readonly view: IRect;
+  /**
+   * Pixel ratio of the canvas
+   */
+  readonly pixelRatio: number;
 
   readonly container: HTMLElement;
   readonly canvas: HTMLCanvasElement;
@@ -23,15 +31,13 @@ export interface IView {
 
   // Returns true if the view has changed
   update(): boolean;
-  // reset transform and scale pixelRatio
-  prepare(): void;
   destroy(): void;
 }
 
-export const View = (() => {
+export const Frame = (() => {
   return create;
 
-  function create({ target, name }: Options): IView {
+  function create({ target, name }: Options): IFrame {
     validateTargetPosition();
 
     const canvas = document.createElement('canvas');
@@ -45,7 +51,7 @@ export const View = (() => {
     const context = canvas.getContext('2d')!;
 
     let elemSize: ISize = [0, 0];
-    let pixelRatio = 0;
+    let pixelRatio = 1;
 
     let view: IRect = [0, 0, 0, 0];
     let outerSize: ISize = [0, 0];
@@ -61,13 +67,15 @@ export const View = (() => {
       get view() {
         return view;
       },
+      get pixelRatio() {
+        return pixelRatio;
+      },
 
       container: target,
       canvas,
       context,
 
       update,
-      prepare,
       destroy,
     };
 
@@ -96,11 +104,6 @@ export const View = (() => {
       canvas.width = innerWidth;
       canvas.height = innerHeight;
       return true;
-    }
-
-    function prepare() {
-      context.resetTransform();
-      context.scale(pixelRatio, pixelRatio);
     }
 
     function validateTargetPosition() {

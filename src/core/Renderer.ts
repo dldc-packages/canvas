@@ -1,16 +1,18 @@
-import { EventManager } from './EventManager';
-import type { ILayer } from './Layer';
-import { Layer } from './Layer';
-import type { IScreduler } from './Scheduler';
-import { Screduler } from './Scheduler';
-import { Tools } from './Tools';
-import type { IView } from './View';
-import { View } from './View';
+import { EventManager } from '../EventManager';
+import { Tools } from '../Tools';
+import type { IFrame } from './Frame';
+import { Frame } from './Frame';
+import type { ILayer } from './Layer.types';
+import { Scheduler, type IScheduler } from './Scheduler';
 
+/**
+ * Connect everything together
+ * - Create a View
+ */
 export interface IRenderer<RootLayer extends ILayer> {
   readonly layer: RootLayer;
-  readonly scheduler: IScreduler;
-  readonly view: IView;
+  readonly scheduler: IScheduler;
+  readonly view: IFrame;
 
   destroy(): void;
 }
@@ -37,23 +39,23 @@ export const Renderer = (() => {
     layer,
     autoStart = true,
   }: IRendererOptions<RootLayer>): IRenderer<RootLayer> {
-    const view = View({ target, name });
-    const scheduler = Screduler.create(onFrame);
-    const tools = Tools.create(view.context, scheduler);
+    const frame = Frame({ target, name });
+    const scheduler = Scheduler.create(onFrame);
+    const tools = Tools.create(frame, scheduler);
     const rootLayer = layer;
-    const rootLayerLifecycles = Layer.mount(rootLayer.ref, tools);
+    const rootLayerLifecycles = rootLayer.mount(tools);
     const eventManager = EventManager.create(eventsTarget);
 
     if (autoStart) {
       scheduler.start();
     }
 
-    return { layer: rootLayer, scheduler, view, destroy };
+    return { layer: rootLayer, scheduler, view: frame, destroy };
 
     function destroy() {
       scheduler.stop();
       rootLayerLifecycles.cleanup?.();
-      view.destroy();
+      frame.destroy();
       eventManager.destroy();
     }
 
@@ -63,16 +65,15 @@ export const Renderer = (() => {
         rootLayerLifecycles.event?.(event);
       });
 
-      const resized = view.update();
-      view.prepare();
+      const resized = frame.update();
 
-      const currentView = view.view;
+      const currentView = frame.view;
 
       const renderRects = rootLayerLifecycles.update?.({ t, view: currentView }) ?? [];
       // If we resized, we need to redraw the whole view
       const actualRenderRects = resized ? [currentView] : renderRects;
       actualRenderRects.forEach((renderRect) => {
-        rootLayerLifecycles.draw?.({ t, view: currentView, rect: renderRect, ctx: view.context });
+        rootLayerLifecycles.draw?.({ t, view: currentView, rect: renderRect, ctx: frame.context });
       });
     }
   }

@@ -1,7 +1,7 @@
-import type { ILayer, ILayerLifecycles } from './Layer';
-import { Layer } from './Layer';
-import { List } from './List';
-import type { Tools } from './Tools';
+import { Layer } from '../core/Layer';
+import type { ILayer, ILayerLifecycles } from '../core/Layer.types';
+import type { Tools } from '../Tools';
+import { List } from '../utils/List';
 
 export interface IGroup<Child extends ILayer> extends ILayer {
   readonly children: ReadonlyArray<Child>;
@@ -25,7 +25,7 @@ export const Group = (() => {
     let mergedLifecycles: ILayerLifecycles = {};
 
     const layerGroup: IGroup<Child> = {
-      ref: Layer.createRef(mount),
+      mount,
       children: children.raw,
       appendChild,
       removeChild,
@@ -59,7 +59,7 @@ export const Group = (() => {
     }
 
     function mountChild(child: Child, tools: Tools) {
-      const lifecycles = Layer.mount(child.ref, tools);
+      const lifecycles = child.mount(tools);
       if (lifecycles) {
         mountedChildren.set(child, lifecycles);
       }
