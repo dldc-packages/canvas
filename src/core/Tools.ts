@@ -1,7 +1,7 @@
 import type { TStackCoreValue } from '@dldc/stack';
 import { Key, Stack } from '@dldc/stack';
-import type { IScheduler } from './core/Scheduler';
-import type { IFrame } from './mod';
+import type { IFrame } from '../mod';
+import type { IScheduler } from './Scheduler';
 
 export class Tools extends Stack {
   static create(view: IFrame, scheduler: IScheduler): Tools {

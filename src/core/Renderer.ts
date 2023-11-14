@@ -1,9 +1,9 @@
-import { EventManager } from '../EventManager';
-import { Tools } from '../Tools';
+import { EventManager } from './EventManager';
 import type { IFrame } from './Frame';
 import { Frame } from './Frame';
 import type { ILayer } from './Layer.types';
 import { Scheduler, type IScheduler } from './Scheduler';
+import { Tools } from './Tools';
 
 /**
  * Connect everything together

@@ -1,6 +1,6 @@
 import { Layer } from '../core/Layer';
 import type { ILayer, ILayerLifecycles } from '../core/Layer.types';
-import type { Tools } from '../Tools';
+import type { Tools } from '../core/Tools';
 import { List } from '../utils/List';
 
 export interface IGroup<Child extends ILayer> extends ILayer {

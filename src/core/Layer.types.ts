@@ -1,5 +1,5 @@
-import type { Tools } from '../Tools';
 import type { IRect } from '../utils/Geometry';
+import type { Tools } from './Tools';
 
 /**
  * This is a layer
