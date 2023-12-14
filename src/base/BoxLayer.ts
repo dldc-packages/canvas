@@ -6,11 +6,11 @@ import { Variables } from './Variables';
  *
  */
 export interface IBoxLayer<Child extends ILayer> extends ILayer {
+  readonly children: Child;
   width: number;
   height: number;
   x: number;
   y: number;
-  children: Child;
 }
 
 export interface IBoxLayerOptions<Child extends ILayer> {
