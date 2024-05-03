@@ -1,0 +1,4 @@
+{
+  "viteExample": true,
+  "additionalDevDependencies": ["@dldc/humpf"]
+}
