@@ -1,4 +1,4 @@
-import { Group, PixelRatio, Renderer } from '../src/mod';
+import { PixelRatio, createGroup, createRenderer } from '@mod';
 import { Clear } from './Clear';
 import { MovingRect } from './MovingRect';
 import { RenderArea } from './RenderArea';
@@ -8,10 +8,10 @@ const target = document.createElement('div');
 Object.assign(target.style, { position: 'fixed', inset: '50px' });
 rootEl.appendChild(target);
 
-const renderer = Renderer.create({
+const renderer = createRenderer({
   target,
   layer: PixelRatio(
-    Group.create({
+    createGroup({
       children: [
         Clear(),
         RenderArea(),

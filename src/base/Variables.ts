@@ -7,7 +7,9 @@ export interface IVariables<T extends Record<string, any>> {
   commit(): boolean; // true if the value has changed
 }
 
-export function Variables<T extends Record<string, any>>(init: T): IVariables<T> {
+export function Variables<T extends Record<string, any>>(
+  init: T,
+): IVariables<T> {
   let current: T = { ...init };
   let next: T = { ...init };
 

@@ -17,20 +17,20 @@ export const HitView = (() => {
   return { create };
 
   function create(): IHitView {
-    const canvas = document.createElement('canvas');
+    const canvas = document.createElement("canvas");
     Object.assign(canvas, { width: 1, height: 1 });
     // need to cast to CanvasRenderingContext2D because DTS fails to build types otherwise
-    const context = canvas.getContext('2d', { willReadFrequently: true })!;
+    const context = canvas.getContext("2d", { willReadFrequently: true })!;
 
     return { canvas, context, prepare, getHitColor };
 
     function prepare(x: number, y: number): void {
       context.resetTransform();
       context.clearRect(0, 0, 1, 1);
-      context.scale(window.devicePixelRatio, window.devicePixelRatio);
+      context.scale(globalThis.devicePixelRatio, globalThis.devicePixelRatio);
       context.translate(-x, -y);
-      context.fillStyle = '#000000';
-      context.strokeStyle = '#000000';
+      context.fillStyle = "#000000";
+      context.strokeStyle = "#000000";
     }
 
     function getHitColor(): string | null {
@@ -39,7 +39,9 @@ export const HitView = (() => {
       const g = res.data[1];
       const b = res.data[2];
       const a = res.data[3];
-      const color = a === 0 ? null : '#' + ('000000' + ((r << 16) | (g << 8) | b).toString(16)).slice(-6);
+      const color = a === 0
+        ? null
+        : "#" + ("000000" + ((r << 16) | (g << 8) | b).toString(16)).slice(-6);
       return color;
     }
   }

@@ -1,5 +1,5 @@
-import type { ILayer } from '../src/mod';
-import { Geometry } from '../src/mod';
+import type { ILayer } from '@mod';
+import { expandRect } from '@mod';
 
 export function RenderArea(): ILayer {
   return {
@@ -8,7 +8,7 @@ export function RenderArea(): ILayer {
         draw({ ctx, view }) {
           ctx.strokeStyle = 'red';
           ctx.lineWidth = 2;
-          const [x, y, width, height] = Geometry.Rect.expand(view, -1);
+          const [x, y, width, height] = expandRect(view, -1);
           ctx.strokeRect(x, y, width, height);
         },
       };

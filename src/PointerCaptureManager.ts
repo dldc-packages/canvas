@@ -18,7 +18,10 @@ export const PointerCaptureManager = (() => {
       hasCapture,
     };
 
-    function capturePointer(target: Target, pointerId: number): TReleasePointer {
+    function capturePointer(
+      target: Target,
+      pointerId: number,
+    ): TReleasePointer {
       if (captures.has(pointerId)) {
         throw new Error(`Pointer ${pointerId} already captured`);
       }

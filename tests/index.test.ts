@@ -1,5 +1,5 @@
-import { expect, test } from 'vitest';
+import { expect } from "@std/expect";
 
-test('tests are working', () => {
+Deno.test("tests are working", () => {
   expect(1).toBe(1);
 });

@@ -1,0 +1,27 @@
+{
+  "name": "@dldc/canvas",
+  "version": "1.2.9",
+  "exports": "./mod.ts",
+  "imports": {
+    "@dldc/pubsub": "jsr:@dldc/pubsub@^7.0.1",
+    "@dldc/stack": "jsr:@dldc/stack@^6.0.2",
+    "@std/expect": "jsr:@std/expect@^0.224.1"
+  },
+  "compilerOptions": {
+    "lib": ["deno.window", "dom"]
+  },
+  "tasks": {
+    "test": "deno test --allow-read .",
+    "test:watch": "deno test --watch",
+    "bump": "deno run -A jsr:@mys/bump@1",
+    "update": "deno run --allow-read=. --allow-write=. --allow-net https://deno.land/x/udd@0.8.2/main.ts *.ts deno.jsonc",
+    "check": "deno fmt --check . && deno lint . && deno task test"
+  },
+  "exclude": ["example"],
+  "lint": {
+    "rules": { "exclude": ["no-explicit-any"] }
+  },
+  "publish": {
+    "exclude": ["example"]
+  }
+}

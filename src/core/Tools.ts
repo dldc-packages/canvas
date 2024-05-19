@@ -1,7 +1,7 @@
-import type { TStackCoreValue } from '@dldc/stack';
-import { Key, Stack } from '@dldc/stack';
-import type { IFrame } from '../mod';
-import type { IScheduler } from './Scheduler';
+import type { TKey, TStackCoreValue } from "@dldc/stack";
+import { createKey, Stack } from "@dldc/stack";
+import type { IFrame } from "./Frame.ts";
+import type { IScheduler } from "./Scheduler.ts";
 
 export class Tools extends Stack {
   static create(view: IFrame, scheduler: IScheduler): Tools {
@@ -12,9 +12,11 @@ export class Tools extends Stack {
     );
   }
 
-  static CtxKey = Key.create<CanvasRenderingContext2D>('Ctx');
-  static SchedulerKey = Key.create<IScheduler>('Screduler');
-  static FrameKey = Key.create<IFrame>('View');
+  static CtxKey: TKey<CanvasRenderingContext2D> = createKey<
+    CanvasRenderingContext2D
+  >("Ctx");
+  static SchedulerKey: TKey<IScheduler> = createKey<IScheduler>("Screduler");
+  static FrameKey: TKey<IFrame> = createKey<IFrame>("View");
 
   public get ctx(): CanvasRenderingContext2D {
     return this.getOrFail(Tools.CtxKey.Consumer);

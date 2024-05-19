@@ -1,10 +1,10 @@
 import { SpringSequence } from '@dldc/humpf';
-import type { ILayer } from '../src/mod';
-import { BoxLayer, HitResponder, Layer } from '../src/mod';
+import type { ILayer } from '@mod';
+import { BoxLayer, createHitResponder, mergeLayers } from '@mod';
 import { PaintRect } from './PaintRect';
 
 export function MovingRect(color: string): ILayer {
-  const hit = HitResponder.create();
+  const hit = createHitResponder();
 
   const paintRect = PaintRect(hit, color);
   const boxLayer = BoxLayer({ children: paintRect, width: 300, height: 300, x: 0, y: Math.random() * 600 });
@@ -33,7 +33,7 @@ export function MovingRect(color: string): ILayer {
         paintRect.color = color;
       });
 
-      return Layer.merge(hit, boxMounted, {
+      return mergeLayers(hit, boxMounted, {
         cleanup() {
           clearInterval(timer);
         },

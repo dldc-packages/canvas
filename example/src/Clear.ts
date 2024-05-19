@@ -1,4 +1,4 @@
-import type { ILayer } from '../src/mod';
+import type { ILayer } from '@mod';
 
 export function Clear(): ILayer {
   return {

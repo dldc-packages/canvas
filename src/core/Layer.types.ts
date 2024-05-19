@@ -1,5 +1,5 @@
-import type { IRect } from '../utils/Geometry';
-import type { Tools } from './Tools';
+import type { IRect } from "../utils/Geometry.ts";
+import type { Tools } from "./Tools.ts";
 
 /**
  * This is a layer
@@ -72,17 +72,20 @@ export interface IPointer {
 export type IPointers = ReadonlyArray<IPointer>;
 
 export type IEventAny =
-  | { name: 'PointerEnter'; pointerId: number }
-  | { name: 'PointerDown'; pointerId: number }
-  | { name: 'PointerUp'; pointerId: number }
-  | { name: 'PointerMove'; pointerId: number }
-  | { name: 'PointerCancel'; pointerId: number }
-  | { name: 'PointerLeave'; pointerId: number }
-  | { name: 'Wheel'; deltaX: number; deltaY: number };
+  | { name: "PointerEnter"; pointerId: number }
+  | { name: "PointerDown"; pointerId: number }
+  | { name: "PointerUp"; pointerId: number }
+  | { name: "PointerMove"; pointerId: number }
+  | { name: "PointerCancel"; pointerId: number }
+  | { name: "PointerLeave"; pointerId: number }
+  | { name: "Wheel"; deltaX: number; deltaY: number };
 
-export type IEventName = IEventAny['name'];
+export type IEventName = IEventAny["name"];
 
-export type IEvent<EventName extends IEventName = IEventName> = Extract<IEventAny, { name: EventName }>;
+export type IEvent<EventName extends IEventName = IEventName> = Extract<
+  IEventAny,
+  { name: EventName }
+>;
 
 export type THandled = boolean;
 

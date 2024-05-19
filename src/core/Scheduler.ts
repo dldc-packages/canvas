@@ -14,48 +14,44 @@ export interface IScheduler {
   stop(): void;
 }
 
-export const Scheduler = (() => {
-  return { create };
+export function createScheduler(onFrame: (t: number) => void): IScheduler {
+  let startTime = performance.now();
+  let currentTime = startTime;
+  let requestedFrameId: number | null = null;
 
-  function create(onFrame: (t: number) => void): IScheduler {
-    let startTime = performance.now();
-    let currentTime = startTime;
-    let requestedFrameId: number | null = null;
+  return {
+    time,
+    start,
+    stop,
+  };
 
-    return {
-      time,
-      start,
-      stop,
-    };
-
-    function time() {
-      return currentTime;
-    }
-
-    function start() {
-      if (requestedFrameId !== null) {
-        // already running
-        return;
-      }
-      startTime = performance.now();
-      currentTime = startTime;
-      loop();
-    }
-
-    function stop() {
-      if (requestedFrameId === null) {
-        // already stopped
-        return;
-      }
-      cancelAnimationFrame(requestedFrameId);
-      requestedFrameId = null;
-    }
-
-    function loop() {
-      const t = performance.now() - startTime;
-      currentTime = t;
-      onFrame?.(t);
-      requestedFrameId = requestAnimationFrame(loop);
-    }
+  function time() {
+    return currentTime;
   }
-})();
+
+  function start() {
+    if (requestedFrameId !== null) {
+      // already running
+      return;
+    }
+    startTime = performance.now();
+    currentTime = startTime;
+    loop();
+  }
+
+  function stop() {
+    if (requestedFrameId === null) {
+      // already stopped
+      return;
+    }
+    cancelAnimationFrame(requestedFrameId);
+    requestedFrameId = null;
+  }
+
+  function loop() {
+    const t = performance.now() - startTime;
+    currentTime = t;
+    onFrame?.(t);
+    requestedFrameId = requestAnimationFrame(loop);
+  }
+}

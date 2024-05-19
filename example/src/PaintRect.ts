@@ -1,5 +1,5 @@
-import type { IHitResponder, ILayer } from '../src/mod';
-import { Variable } from '../src/mod';
+import type { IHitResponder, ILayer } from '@mod';
+import { Variable } from '@mod';
 
 export interface IPaintRect extends ILayer {
   color: string;
