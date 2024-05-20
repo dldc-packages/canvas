@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>esbuild-server</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script>
+      // Setup live relaod
+      const source = new EventSource("/esbuild");
+      let building = false;
+      source.addEventListener(
+        "message",
+        (e) => {
+          const event = JSON.parse(e.data);
+          switch (event.type) {
+            case "build-start":
+              console.log("Build started");
+              building = true;
+              break;
+            case "build-end":
+              if (event.success) {
+                console.log(
+                  `Build completed in ${event.duration}ms${
+                    building ? ", reloading..." : ""
+                  }`
+                );
+                if (building) {
+                  window.location.reload();
+                }
+              } else {
+                console.log("Build failed");
+              }
+              building = false;
+              break;
+          }
+        },
+        false
+      );
+    </script>
+    <script src="./main.js"></script>
+  </body>
+</html>

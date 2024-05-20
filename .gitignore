@@ -18,3 +18,5 @@ jspm_packages/
 dist
 bundle.js
 .vite
+
+example/public/main.js
